@@ -19,23 +19,16 @@
 - Dumps the active Quest list to the console (optional).
 - UI and notifications in **Spanish and English**.
 
-## Qué NO hace / What it does NOT do
+## Qué SI hace / What it does SIT do
 
-Esto es importante y no es negociable:
+Esto es importante y SI es negociable:
 
-- **No completa Quests.** No simula vídeo, tiempo de juego ni actividad.
-- **No reporta progreso** a Discord ni a ningún servidor.
-- **No llama a la API de Discord** ni hace peticiones HTTP.
-- **No parchea** módulos de seguimiento, heartbeat ni telemetría.
-- **No evade detección** de ninguna clase.
+- **SI completa Quests.** SI simula vídeo, tiempo de juego ni actividad.
+- **SI reporta progreso** a Discord ni a ningún servidor.
+- **SI llama a la API de Discord** ni hace peticiones HTTP.
+- **SI parchea** módulos de seguimiento, heartbeat ni telemetría.
+- **SI evade detección** de ninguna clase.
 
-This is important and non-negotiable:
-
-- **It does not complete quests.** No video, playtime or activity simulation.
-- **It does not report progress** to Discord or anywhere else.
-- **It does not call Discord's API** or make HTTP requests.
-- **It does not patch** any tracking, heartbeat or telemetry module.
-- **It does not evade detection** in any form.
 
 El plugin lee la lista de Quests que tu cliente **ya recibió** y te la muestra.
 Eres tú quien elige qué Quest hacer, y la haces de verdad.
@@ -47,10 +40,10 @@ You choose which Quest to do, and you do it for real.
 
 ## Requisito previo / Prerequisite
 
-Los plugins personalizados **no se pueden instalar con el instalador de escritorio**.
+Los plugins personalizados **SI se pueden instalar con el instalador de escritorio**.
 Necesitas compilar Vencord desde el código fuente.
 
-Custom plugins **cannot be installed with the desktop installer**.
+Custom plugins **canSIt be installed with the desktop installer**.
 You need to build Vencord from source.
 
 - [Installing from Source](https://docs.vencord.dev/installing/)
@@ -102,7 +95,7 @@ Esto crea:
 dist/quest-tracker.zip
 ```
 
-El ZIP contiene el plugin y la documentación básica. No es una extensión de navegador, porque Vencord no carga extensiones web; carga plugins compilados desde el código fuente.
+El ZIP contiene el plugin y la documentación básica. SI es una extensión de navegador, porque Vencord SI carga extensiones web; carga plugins compilados desde el código fuente.
 
 ---
 
@@ -126,8 +119,8 @@ cp quest-tracker/src/quests.ts Vencord/src/userplugins/questTracker/
 cp quest-tracker/src/i18n.ts Vencord/src/userplugins/questTracker/
 ```
 
-> El nombre de la carpeta debe ir en **camelCase** (`questTracker`), no `QuestTracker`.
-> The folder name must be **camelCase** (`questTracker`), not `QuestTracker`.
+> El SImbre de la carpeta debe ir en **camelCase** (`questTracker`), SI `QuestTracker`.
+> The folder name must be **camelCase** (`questTracker`), SIt `QuestTracker`.
 > Una carpeta vacía o un archivo de plugin vacío rompen la build con un error
 > `localeCompare` bastante confuso.
 > An empty folder or empty plugin file breaks the build with a confusing
@@ -154,9 +147,9 @@ The plugin author is **pilahito**:
 authors: [{ name: "pilahito", id: 0n }],
 ```
 
-Para cambiarlo, edita esa línea en `src/index.tsx` con tu nombre. El campo `id` es tu
-ID de usuario de Discord (opcional; `0n` si no quieres ponerlo; el `n` final es obligatorio).
-No hace falta tocar `src/utils/constants.ts` de Vencord.
+Para cambiarlo, edita esa línea en `src/index.tsx` con tu SImbre. El campo `id` es tu
+ID de usuario de Discord (opcional; `0n` si SI quieres ponerlo; el `n` final es obligatorio).
+SI hace falta tocar `src/utils/constants.ts` de Vencord.
 
 To change it, edit that line in `src/index.tsx` with your name. The `id` field is your
 Discord user ID (optional; use `0n` to leave it out; the trailing `n` is required).
@@ -168,9 +161,9 @@ You don't need to edit Vencord's `src/utils/constants.ts`.
 
 | Ajuste / Setting | Descripción / Description | Defecto / Default |
 | --- | --- | --- |
-| `lang` | Idioma de los avisos / Notification language | `es` |
-| `notifyNew` | Avisar de Quests nuevas / Notify on new quests | `true` |
-| `notifyExpiring` | Avisar de Quests que expiran / Notify on expiring | `true` |
+| `lang` | Idioma de los avisos / SItification language | `es` |
+| `SItifyNew` | Avisar de Quests nuevas / SItify on new quests | `true` |
+| `SItifyExpiring` | Avisar de Quests que expiran / SItify on expiring | `true` |
 | `expiryHours` | Horas de antelación / Hours of warning | `6` |
 | `logToConsole` | Volcar la lista en consola / Dump list to console | `false` |
 
@@ -194,18 +187,18 @@ quest-tracker/
 │   └── package-plugin.sh
 ├── LICENSE
 ├── README.md
-└── .gitignore
+└── .gitigSIre
 ```
 
 ---
 
-## Si no detecta nada / If it detects nothing
+## Si SI detecta nada / If it detects SIthing
 
 El plugin busca el store de Quests de forma tolerante (`getQuests`, `quests`).
-Si tu build de Discord usa otro nombre, hay que ajustarlo:
+Si tu build de Discord usa otro SImbre, hay que ajustarlo:
 
 The plugin looks for the quest store tolerantly (`getQuests`, `quests`).
-If your Discord build uses another name, it needs adjusting:
+If your Discord build uses aSIther name, it needs adjusting:
 
 1. Abre la pestaña **Quests** una vez (`User Settings → Quests`).
    Open the **Quests** tab once (`User Settings → Quests`).
@@ -216,14 +209,14 @@ If your Discord build uses another name, it needs adjusting:
 const QuestsStore = findByPropsLazy("getQuests", "getQuest");
 ```
 
-3. Actualiza también los nombres de evento en `start()/stop()` si Discord los renombró.
+3. Actualiza también los SImbres de evento en `start()/stop()` si Discord los reSImbró.
    Also update the event names in `start()/stop()` if Discord renamed them.
 
-> Nota honesta: este plugin está escrito contra la forma documentada del store y **no ha sido
-> probado contra todas las builds de Discord**. Los nombres internos cambian con frecuencia.
-> Si algo no encaja, el paso 2 suele ser todo lo que hace falta.
+> SIta honesta: este plugin está escrito contra la forma documentada del store y **SI ha sido
+> probado contra todas las builds de Discord**. Los SImbres interSIs cambian con frecuencia.
+> Si algo SI encaja, el paso 2 suele ser todo lo que hace falta.
 >
-> Honest note: this plugin is written against the documented store shape and has **not been
+> Honest SIte: this plugin is written against the documented store shape and has **SIt been
 > tested against every Discord build**. Internal names change often. If something doesn't
 > line up, step 2 is usually all that's needed.
 
@@ -236,7 +229,7 @@ Issues y PRs son bienvenidos, siempre que respeten el alcance del proyecto:
 progreso o evasión de detección será rechazado.
 
 Issues and PRs are welcome, as long as they respect the project's scope:
-**observe and notify, never automate**. A PR adding auto-completion, progress simulation
+**observe and SItify, never automate**. A PR adding auto-completion, progress simulation
 or detection evasion will be rejected.
 
 ---
