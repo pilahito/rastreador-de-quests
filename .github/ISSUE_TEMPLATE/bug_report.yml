@@ -1,0 +1,74 @@
+name: Bug
+description: Algo no funciona como debería
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por el reporte. Cuanto más concreto, más rápido se puede arreglar.
+        **No pegues tu token, correo ni capturas con datos privados.**
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión del plugin
+      description: La del release o el commit que estés usando
+      placeholder: 2.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: discord
+    attributes:
+      label: Versión de Discord y de Vencord
+      description: Discord → Ajustes → Avanzado, o el pie del panel de Vencord
+      placeholder: Stable 1.0.xxxx / Vencord 1.15.x
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: ¿Dónde falla?
+      options:
+        - Panel / interfaz
+        - Rastreador (no detecta Quests, progreso, avisos)
+        - "Modo automático: ver vídeo"
+        - "Modo automático: jugar en escritorio"
+        - "Modo automático: actividad"
+        - "Modo automático: stream"
+        - Reclamar recompensa
+        - Instalación / build
+        - Otro
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: Qué pasa y qué esperabas
+      description: Pasos para reproducirlo, y qué Quest/tipo estaba implicada
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Registro
+      description: Pestaña Automático → Registro, y consola (Ctrl+Shift+I) si activaste los ajustes de log
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: He compilado Vencord desde el código con el plugin en `src/userplugins/questTracker`
+          required: true
+        - label: He probado con el plugin actualizado y el modo automático (si aplica) activado a mano
+          required: true
+        - label: Entiendo que la automatización de Quests va contra las normas de Discord y que el riesgo es mío
+          required: true

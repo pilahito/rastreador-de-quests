@@ -1,7 +1,7 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
 .SYNOPSIS
-    Instala QuestTracker en Vencord (Windows) / Installs QuestTracker into Vencord (Windows).
+    Instala el Rastreador de Quests en Vencord (Windows) / Installs the quest tracker into Vencord (Windows).
 
 .DESCRIPTION
     1. Busca tu copia de Vencord (o la clona si no existe).
@@ -44,7 +44,7 @@ function Ask($question) {
 function Has($cmd) { return [bool](Get-Command $cmd -ErrorAction SilentlyContinue) }
 
 Write-Host ""
-Write-Host "  QuestTracker - instalador / installer" -ForegroundColor Magenta
+Write-Host "  Rastreador de Quests (QuestTracker) - instalador / installer" -ForegroundColor Magenta
 Write-Host "  Plugin de SOLO LECTURA para Vencord / READ-ONLY Vencord plugin"
 Write-Host ""
 
@@ -113,14 +113,13 @@ if (-not $found) {
 Ok "Vencord: $found"
 
 # --- 3. Copiar plugin / Copy plugin ------------------------------------------
-Step "Copiando QuestTracker / Copying QuestTracker"
+Step "Copiando Rastreador de Quests / Copying quest tracker"
 
 $dest = Join-Path $found "src\userplugins\$PluginDirName"
 if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
-Get-ChildItem (Join-Path $repoRoot "src") -File | Where-Object { $_.Extension -in ".ts", ".tsx", ".css" } |
-    ForEach-Object { Copy-Item $_.FullName (Join-Path $dest $_.Name) -Force }
-$count = (Get-ChildItem $dest -File).Count
+Copy-Item -Path (Join-Path $repoRoot "src\*") -Destination $dest -Recurse -Force
+$count = (Get-ChildItem $dest -Recurse -File).Count
 Ok "$count archivos en / files in: $dest"
 
 if ($NoBuild) {
@@ -154,7 +153,7 @@ finally {
 }
 
 Write-Host ""
-Write-Host "  Hecho. Reinicia Discord y activa QuestTracker en Ajustes > Vencord > Plugins." -ForegroundColor Green
-Write-Host "  Done. Restart Discord and enable QuestTracker in Settings > Vencord > Plugins." -ForegroundColor Green
+Write-Host "  Hecho. Reinicia Discord y activa RastreadorDeQuests en Ajustes > Vencord > Plugins." -ForegroundColor Green
+Write-Host "  Done. Restart Discord and enable RastreadorDeQuests in Settings > Vencord > Plugins." -ForegroundColor Green
 Write-Host "  Abre el panel con el botón del trofeo en el chat o con /quests." -ForegroundColor Green
 Write-Host ""

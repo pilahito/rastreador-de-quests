@@ -1,5 +1,5 @@
 @echo off
-REM QuestTracker - instalador para Windows / Windows installer
+REM Rastreador de Quests - instalador para Windows / Windows installer
 REM Doble clic aqui / Double-click here. Extra options: install.bat -VencordDir D:\Vencord -Inject
 setlocal
 cd /d "%~dp0"

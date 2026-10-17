@@ -1,0 +1,41 @@
+name: Propuesta
+description: Idea o mejora para el rastreador o la interfaz
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de proponer, revisa los límites del proyecto: **no** se aceptan captchas, OAuth,
+        logros de actividad, evasión de detección ni automatización de consola/móvil.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Panel / interfaz
+        - Rastreador y avisos
+        - Modo automático
+        - Ajustes
+        - Traducciones
+        - Documentación
+        - Pruebas / CI
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: La idea
+      description: Qué quieres y para qué
+    validations:
+      required: true
+
+  - type: textarea
+    id: limits
+    attributes:
+      label: ¿Respeta los límites?
+      description: Explica por qué no pide saltarse captchas, OAuth, logros de actividad, consola/móvil o evasión
+    validations:
+      required: true

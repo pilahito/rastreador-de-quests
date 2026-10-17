@@ -7,6 +7,8 @@
 import { definePluginSettings } from "@api/Settings";
 import { OptionType } from "@utils/types";
 
+import { fireAutoEnabledChanged, fireConsentChanged } from "./auto/bridge";
+
 export const settings = definePluginSettings({
     lang: {
         type: OptionType.SELECT,
@@ -62,6 +64,90 @@ export const settings = definePluginSettings({
     logToConsole: {
         type: OptionType.BOOLEAN,
         description: "Log the quest list to the console (debug) / Volcar la lista en la consola (depuración)",
+        default: false
+    },
+
+    /* ------------------------------------------------------------------ */
+    /* Modo automático / automation                                        */
+    /* ------------------------------------------------------------------ */
+
+    autoConsent: {
+        type: OptionType.BOOLEAN,
+        description:
+            "⚠️ AUTOMATIZACIÓN: actívalo solo si aceptas el riesgo. Discord prohíbe automatizar Quests y desde " +
+            "2026 sanciona cuentas por 'Inauthentic Quest Completion' (bloqueo de Quests y aviso en la cuenta). " +
+            "Puedes perder el acceso a las Quests o la cuenta. El plugin no hace nada irreversible por sí mismo, " +
+            "pero la sanción de Discord no la controla el plugin.\n" +
+            "⚠️ AUTOMATION: only enable if you accept the risk. Discord bans quest automation and has been " +
+            "sanctioning accounts for 'Inauthentic Quest Completion'. You may lose Quest access or the account.",
+        default: false,
+        onChange: (value: boolean) => fireConsentChanged(value)
+    },
+    autoEnabled: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Master switch: accept and complete the quests allowed by the toggles below. Requires the risk " +
+            "acknowledgement above. / Interruptor maestro: aceptar y completar las Quests permitidas abajo. " +
+            "Requiere el aviso de riesgo de arriba.",
+        default: false,
+        onChange: (value: boolean) => fireAutoEnabledChanged(value)
+    },
+    autoAccept: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Accept the quest for you before starting it. Turn it off to only complete quests you accepted by " +
+            "hand in Discord. / Aceptar la Quest automáticamente antes de empezar. Si lo apagas, solo completa " +
+            "las que hayas aceptado tú en Discord.",
+        default: true
+    },
+    autoClaimRewards: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Claim the reward right after completing a quest. Discord may ask for a captcha: then the claim fails " +
+            "and the panel tells you to do it by hand (the plugin never bypasses a captcha). Off by default so the " +
+            "decision to claim stays yours. / Reclamar la recompensa al terminar. Si Discord pide captcha, el plugin " +
+            "no lo salta: te avisa para que lo hagas tú. Apagado por defecto.",
+        default: false
+    },
+    autoVideos: {
+        type: OptionType.BOOLEAN,
+        description: "Automate WATCH_VIDEO quests / Automatizar Quests de ver vídeo",
+        default: true
+    },
+    autoGames: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Automate PLAY_ON_DESKTOP quests (spoofs a running process). Desktop app only. / " +
+            "Automatizar Quests de jugar en escritorio (simula un proceso en ejecución). Solo app de escritorio.",
+        default: true
+    },
+    autoActivities: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Automate PLAY_ACTIVITY quests (sends the activity heartbeat). / " +
+            "Automatizar Quests de actividad (manda el heartbeat de actividad).",
+        default: true
+    },
+    autoStreams: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Try STREAM_ON_DESKTOP quests. Discord also requires a real Go Live and another person in the call, so " +
+            "this usually does NOT complete: the engine tries and reports it instead of hanging. Off by default. / " +
+            "Intentar Quests de stream. Discord exige además un Go Live real y otra persona en la llamada, así que " +
+            "normalmente NO se completan. Apagado por defecto.",
+        default: false
+    },
+    autoHideActivity: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Hide your 'Playing X' status while a game is spoofed, by turning Discord's own 'Display current activity " +
+            "as a status message' off and restoring it afterwards (a breadcrumb puts it back if Discord dies mid-way). / " +
+            "Ocultar tu estado 'Jugando X' mientras dura el spoof, apagando el ajuste de Discord y restaurándolo después.",
+        default: true
+    },
+    autoLogToConsole: {
+        type: OptionType.BOOLEAN,
+        description: "Also log the automation to the console (debug) / Escribir también el registro automático en la consola",
         default: false
     }
 });

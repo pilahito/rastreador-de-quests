@@ -5,6 +5,10 @@ node_modules/
 dist/
 build/
 
+# Investigación local / local research (no forma parte del repo)
+.research/
+.tmp-package/
+
 # Logs / Registros
 *.log
 npm-debug.log*

@@ -5,15 +5,15 @@
  */
 
 /*
- * QuestTracker — rastreador de Quests de SOLO LECTURA / READ-ONLY Quest tracker.
+ * QuestTracker — rastreador de Quests con modo automático OPCIONAL.
  *
- * Este plugin solo lee las Quests que el cliente ya tiene en memoria y te avisa.
- * Nunca llama a la API de Discord, nunca envía progreso ni heartbeats, nunca
- * acepta ni reclama nada, nunca parchea telemetría. Tú haces las Quests de verdad.
+ * El rastreador solo lee las Quests que el cliente ya tiene en memoria y te avisa.
+ * El modo automático viene APAGADO por defecto, exige aceptar un aviso de riesgo y se
+ * puede detener en cualquier momento; al detenerlo se limpia todo lo que haya simulado.
  *
- * This plugin only reads the quests the client already holds and notifies you.
- * It never calls Discord's API, never sends progress or heartbeats, never
- * accepts or claims anything and never patches telemetry. You do quests for real.
+ * The tracker only reads the quests the client already holds and notifies you.
+ * Automation is OFF by default, requires accepting a risk notice and can be stopped at
+ * any time; stopping cleans up everything it spoofed.
  */
 
 import "./style.css";
@@ -23,7 +23,10 @@ import { ApplicationCommandInputType } from "@api/Commands";
 import * as DataStore from "@api/DataStore";
 import { showNotification } from "@api/Notifications";
 import definePlugin from "@utils/types";
+import { showToast } from "@webpack/common";
 
+import { hasAutoConsent, initAuto, isAutoRunning, setAutoEnabled, shutdownAuto } from "./auto/engine";
+import { openAutoConsent } from "./AutoConsent";
 import { recordHistory } from "./history";
 import { setLang, t } from "./i18n";
 import { openQuestPanel, readCurrentQuests } from "./QuestPanel";
@@ -76,6 +79,22 @@ function notify(title: string, body: string) {
         body,
         onClick: () => openQuestPanel()
     });
+}
+
+/** Activa o desactiva el modo automático; si falta el aviso de riesgo, lo abre. */
+function toggleAutomation() {
+    setLang(settings.store.lang);
+    if (!hasAutoConsent()) {
+        showToast({ text: t("autoConsentNeeded"), variant: "danger" } as any);
+        openAutoConsent(() => {
+            // El motor arranca solo con el cambio del ajuste.
+            settings.store.autoEnabled = true;
+        });
+        return;
+    }
+    const next = !(settings.store.autoEnabled || isAutoRunning());
+    setAutoEnabled(next);
+    showToast({ text: t(next ? "autoStarted" : "autoStopped"), variant: next ? "success" : "secondary" } as any);
 }
 
 function logQuests(quests: QuestInfo[]) {
@@ -185,13 +204,16 @@ function attachToStore(attempt = 0) {
 }
 
 export default definePlugin({
-    name: "QuestTracker",
+    name: "RastreadorDeQuests",
     description:
-        "Read-only Discord Quest tracker: panel with progress, notifications and local history. Never automates anything. / " +
-        "Rastreador de Quests de solo lectura: panel con progreso, avisos e historial local. Nunca automatiza nada.",
+        "Quest tracker with an OPTIONAL automation mode (off by default): panel, notifications, history. " +
+        "Automation requires accepting a risk notice. / " +
+        "Rastreador de Quests con modo automático OPCIONAL (apagado por defecto): panel, avisos e historial. " +
+        "El modo automático exige aceptar un aviso de riesgo.",
+    searchTerms: ["rastreador", "quests", "misiones", "recompensas", "auto", "automático", "discord"],
     authors: [{ name: "pilahito", id: 0n }],
     tags: ["Utility", "Notifications", "Commands"],
-    dependencies: ["CommandsAPI", "ChatInputButtonAPI"],
+    dependencies: ["CommandsAPI", "ChatInputButtonAPI", "UserSettingsAPI"],
 
     settings,
 
@@ -201,20 +223,29 @@ export default definePlugin({
     },
 
     toolboxActions: {
-        "QuestTracker: Quests": () => {
+        "Rastreador de Quests: Quests": () => {
             setLang(settings.store.lang);
             openQuestPanel();
-        }
+        },
+        "Rastreador de Quests: Automático on/off": () => toggleAutomation()
     },
 
     commands: [
         {
             name: "quests",
-            description: "Open the QuestTracker panel (read-only) / Abre el panel de QuestTracker",
+            description: "Open the QuestTracker panel / Abre el panel de QuestTracker",
             inputType: ApplicationCommandInputType.BUILT_IN,
             execute() {
                 setLang(settings.store.lang);
                 openQuestPanel();
+            }
+        },
+        {
+            name: "questauto",
+            description: "Turn QuestTracker automation on/off / Activa o desactiva el modo automático",
+            inputType: ApplicationCommandInputType.BUILT_IN,
+            execute() {
+                toggleAutomation();
             }
         }
     ],
@@ -228,6 +259,7 @@ export default definePlugin({
 
     start() {
         setLang(settings.store.lang);
+        initAuto(notify);
         retryTimer = setTimeout(() => attachToStore(0), 3000);
         // Periodic re-check for time-based warnings / comprobación periódica de caducidad
         intervalTimer = setInterval(scheduleCheck, 5 * 60_000);
@@ -239,5 +271,6 @@ export default definePlugin({
         clearInterval(intervalTimer);
         unsubscribeStore?.();
         unsubscribeStore = undefined;
+        shutdownAuto();
     }
 });

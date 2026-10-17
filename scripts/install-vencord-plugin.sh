@@ -10,7 +10,7 @@ usage() {
   cat <<'EOF'
 Usage: ./scripts/install-vencord-plugin.sh [--vencord-dir PATH] [--plugin-dir NAME] [--build]
 
-Copies the QuestTracker source files into a Vencord source tree and optionally builds/injects it.
+Copies the quest tracker source files into a Vencord source tree and optionally builds/injects it.
 
 Options:
   --vencord-dir PATH   Path to the Vencord source checkout. Default: ../Vencord
@@ -53,20 +53,19 @@ if [[ ! -d "$TARGET_DIR" ]]; then
 fi
 
 DEST_DIR="$TARGET_DIR/src/userplugins/$PLUGIN_DIR"
-mkdir -p "$DEST_DIR"
-
 rm -rf "$DEST_DIR"
 mkdir -p "$DEST_DIR"
-find "$ROOT_DIR/src" -maxdepth 1 -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -exec cp {} "$DEST_DIR/" \;
+cp -R "$ROOT_DIR/src/." "$DEST_DIR/"
 
 cat <<EOF
-QuestTracker copied to:
+Rastreador de Quests (QuestTracker) copiado a / copied to:
   $DEST_DIR
 
-Important:
-  - The folder name must be camelCase, for example: questTracker
-  - Vencord must be built from source
-  - The plugin is read-only and does not automate Discord activity
+Importante / Important:
+  - La carpeta debe ser camelCase / folder must be camelCase, e.g.: questTracker
+  - Vencord tiene que compilarse desde el código / Vencord must be built from source
+  - El modo automático viene APAGADO y exige aceptar un aviso de riesgo
+    Automation is OFF by default and requires accepting a risk notice
 EOF
 
 if [[ "$BUILD_AFTER_COPY" == "true" ]]; then

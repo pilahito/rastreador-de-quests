@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Vencord
+    url: https://github.com/Vendicated/Vencord
+    about: Problemas de Vencord, no del plugin
+  - name: Aviso de riesgo
+    url: https://github.com/pilahito/rastreador-de-quests#aviso-de-riesgo
+    about: Lee esto antes de activar el modo automático

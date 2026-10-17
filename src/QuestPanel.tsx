@@ -4,12 +4,27 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-/* QuestTracker — panel de Quests (solo lectura) / Quest panel (read-only) */
+/* QuestTracker — panel de Quests (rastreador + modo automático opcional) */
 
 import { Button } from "@components/Button";
 import { RenderModalProps } from "@vencord/discord-types";
 import { Modal, openModal, showToast, TextInput, useEffect, useMemo, useState } from "@webpack/common";
 
+import {
+    autoCompleteQuest,
+    AutoEntry,
+    AutoPhase,
+    AutoSnapshot,
+    cancelAutoQuest,
+    claimQuestNow,
+    clearAutoLog,
+    getAutoSnapshot,
+    hasAutoConsent,
+    isAutoRunning,
+    setAutoEnabled,
+    subscribeAuto
+} from "./auto/engine";
+import { openAutoConsent } from "./AutoConsent";
 import { clearHistory, getHistory, HistoryEntry } from "./history";
 import { formatDate, formatDuration, StringKey, t } from "./i18n";
 import { openExternal, openQuestsInDiscord } from "./nav";
@@ -41,6 +56,20 @@ const TYPE_ICONS: Record<TaskCategory, string> = {
     other: "★"
 };
 
+const PHASE_KEYS: Record<AutoPhase, StringKey> = {
+    queued: "autoPhaseQueued",
+    accepting: "autoPhaseAccepting",
+    working: "autoPhaseWorking",
+    claiming: "autoPhaseClaiming",
+    done: "autoPhaseDone",
+    claimed: "autoPhaseClaimed",
+    failed: "autoPhaseFailed",
+    blocked: "autoPhaseBlocked",
+    stopped: "autoPhaseStopped"
+};
+
+const BUSY_PHASES: AutoPhase[] = ["queued", "accepting", "working", "claiming"];
+
 const SORT_KEYS: Record<SortKey, StringKey> = {
     expiry: "sortExpiry",
     progress: "sortProgress",
@@ -70,6 +99,12 @@ function useLiveQuests() {
     return [state, () => setState(readCurrentQuests(true))] as const;
 }
 
+function useAutoSnapshot(): AutoSnapshot {
+    const [snapshot, setSnapshot] = useState(getAutoSnapshot);
+    useEffect(() => subscribeAuto(() => setSnapshot(getAutoSnapshot())), []);
+    return snapshot;
+}
+
 function Chip({ active, onClick, children }: { active: boolean; onClick(): void; children: React.ReactNode; }) {
     return (
         <button type="button" className={"vc-qt-chip" + (active ? " vc-qt-chip-active" : "")} onClick={onClick}>
@@ -94,12 +129,22 @@ function hintFor(q: QuestInfo): string | undefined {
     }
 }
 
-function QuestCard({ q }: { q: QuestInfo; }) {
+function QuestCard({ q, entry, onAuto, onClaim, onCancel }: {
+    q: QuestInfo;
+    entry?: AutoEntry;
+    onAuto(q: QuestInfo): void;
+    onClaim(q: QuestInfo): void;
+    onCancel(q: QuestInfo): void;
+}) {
     const [imgOk, setImgOk] = useState(true);
     const pct = Math.round(q.progress * 100);
     const now = Date.now();
     const soon = isExpiringSoon(q, settings.store.expiryHours ?? 24, now);
     const hint = hintFor(q);
+
+    const busy = entry != null && BUSY_PHASES.includes(entry.phase);
+    const canAuto = (q.status === "inProgress" || q.status === "available") && q.category !== "other";
+    const claimable = q.status === "completed";
 
     return (
         <div className={`vc-qt-card vc-qt-status-${q.status}`}>
@@ -138,9 +183,32 @@ function QuestCard({ q }: { q: QuestInfo; }) {
                 <div className="vc-qt-reward">🎁 {t("reward")}: <b>{q.reward}</b></div>
                 {hint && <div className={"vc-qt-hint" + (q.status === "completed" ? " vc-qt-hint-claim" : "")}>{hint}</div>}
 
+                {entry && (entry.detail || entry.error) && (
+                    <div className={"vc-qt-auto-note" + (entry.error ? " vc-qt-auto-note-error" : "")}>
+                        <b>{t(PHASE_KEYS[entry.phase])}</b>
+                        {entry.detail ? ` · ${entry.detail}` : ""}
+                        {entry.error ? ` · ${entry.error}` : ""}
+                    </div>
+                )}
+
                 <div className="vc-qt-actions">
+                    {claimable && (
+                        <Button size="small" variant="primary" onClick={() => onClaim(q)}>
+                            {t("autoButtonClaim")}
+                        </Button>
+                    )}
+                    {canAuto && !busy && (
+                        <Button size="small" variant="secondary" onClick={() => onAuto(q)}>
+                            ▶ {t("autoButtonAuto")}
+                        </Button>
+                    )}
+                    {busy && (
+                        <Button size="small" variant="dangerSecondary" onClick={() => onCancel(q)}>
+                            {t("autoButtonCancel")}
+                        </Button>
+                    )}
                     {q.status !== "expired" && q.status !== "claimed" && (
-                        <Button size="small" variant="primary" onClick={() => openQuestsInDiscord(settings.store.questRoute || "/quest-home")}>
+                        <Button size="small" variant="secondary" onClick={() => openQuestsInDiscord(settings.store.questRoute || "/quest-home")}>
                             {t("openInDiscord")}
                         </Button>
                     )}
@@ -160,7 +228,31 @@ function QuestCard({ q }: { q: QuestInfo; }) {
     );
 }
 
-function QuestsTab() {
+function AutoEntryCard({ entry }: { entry: AutoEntry; }) {
+    const pct = entry.max > 0 ? Math.min(100, Math.round((entry.cur / entry.max) * 100)) : 0;
+    return (
+        <div className="vc-qt-card vc-qt-autoentry">
+            <div className="vc-qt-body">
+                <div className="vc-qt-row">
+                    <div className="vc-qt-title">{entry.name}</div>
+                    <span className={"vc-qt-autochip vc-qt-autochip-" + entry.phase}>{t(PHASE_KEYS[entry.phase])}</span>
+                </div>
+                {entry.max > 0 && (
+                    <div className="vc-qt-progress" title={`${pct}%`}>
+                        <div className="vc-qt-progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                )}
+                <div className="vc-qt-meta">
+                    <span>{entry.detail ?? ""}</span>
+                    {entry.max > 0 && <span>{pct}%</span>}
+                </div>
+                {entry.error && <div className="vc-qt-auto-note vc-qt-auto-note-error">{entry.error}</div>}
+            </div>
+        </div>
+    );
+}
+
+function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
     const [{ quests, found }, refresh] = useLiveQuests();
     const [query, setQuery] = useState("");
     const [status, setStatus] = useState<QuestStatus | "all">("all");
@@ -175,6 +267,7 @@ function QuestsTab() {
     }), [quests, hours]);
 
     const presentTypes = useMemo(() => [...new Set(quests.map(q => q.category))], [quests]);
+    const entryById = useMemo(() => new Map(snapshot.entries.map(e => [e.questId, e])), [snapshot.entries]);
 
     const visible = useMemo(() => {
         const needle = query.trim().toLowerCase();
@@ -185,8 +278,67 @@ function QuestsTab() {
         ), sort);
     }, [quests, query, status, type, sort]);
 
+    function enableAutomation() {
+        if (!hasAutoConsent()) {
+            openAutoConsent(() => {
+                setAutoEnabled(true);
+            });
+            return;
+        }
+        setAutoEnabled(true);
+    }
+
+    function disableAutomation() {
+        setAutoEnabled(false);
+    }
+
+    function runOne(q: QuestInfo) {
+        if (!hasAutoConsent()) {
+            openAutoConsent(() => {
+                if (!autoCompleteQuest(q.id)) showToast({ text: t("autoConsentMissing"), variant: "danger" } as any);
+            });
+            return;
+        }
+        if (autoCompleteQuest(q.id)) showToast({ text: t("autoQueued"), variant: "success" } as any);
+    }
+
+    async function claimOne(q: QuestInfo) {
+        const ok = await claimQuestNow(q.id);
+        showToast({
+            text: ok ? t("autoClaimed", { name: q.name }) : t("autoCaptcha"),
+            variant: ok ? "success" : "danger"
+        } as any);
+    }
+
+    const activeEntry = snapshot.activeQuestId ? entryById.get(snapshot.activeQuestId) : undefined;
+
     return (
         <div className="vc-qt-tab">
+            <div className={"vc-qt-autobar" + (snapshot.running ? " vc-qt-autobar-running" : "")}>
+                <div className="vc-qt-autobar-info">
+                    <div className="vc-qt-autobar-title">
+                        ⚙️ {t("autoSectionTitle")}
+                        <span className={"vc-qt-autostate" + (snapshot.running ? " vc-qt-autostate-on" : "")}>
+                            {snapshot.running ? t("autoStatusRunning") : t("autoStatusIdle")}
+                        </span>
+                    </div>
+                    <div className="vc-qt-meta">
+                        {snapshot.running
+                            ? (activeEntry ? t("autoStatusActive", { name: activeEntry.name }) : t("autoStatusWaiting"))
+                            : t("autoManualOnlyHint")}
+                    </div>
+                </div>
+                <div className="vc-qt-actions">
+                    <Button
+                        size="small"
+                        variant={snapshot.running ? "dangerPrimary" : "primary"}
+                        onClick={snapshot.running ? disableAutomation : enableAutomation}
+                    >
+                        {snapshot.running ? t("autoDisable") : t("autoEnable")}
+                    </Button>
+                </div>
+            </div>
+
             <div className="vc-qt-summary">
                 <span><b>{quests.length}</b> Quests</span>
                 <span><b>{summary.inProgress}</b> {t("summaryInProgress")}</span>
@@ -222,8 +374,100 @@ function QuestsTab() {
             {found && !visible.length && <div className="vc-qt-empty">{t("emptyQuests")}</div>}
 
             <div className="vc-qt-list">
-                {visible.map(q => <QuestCard key={q.id} q={q} />)}
+                {visible.map(q => (
+                    <QuestCard
+                        key={q.id}
+                        q={q}
+                        entry={entryById.get(q.id)}
+                        onAuto={runOne}
+                        onClaim={claimOne}
+                        onCancel={qc => cancelAutoQuest(qc.id)}
+                    />
+                ))}
             </div>
+        </div>
+    );
+}
+
+function AutoTab({ snapshot }: { snapshot: AutoSnapshot; }) {
+    const consent = hasAutoConsent();
+    const activeEntry = snapshot.activeQuestId
+        ? snapshot.entries.find(e => e.questId === snapshot.activeQuestId)
+        : undefined;
+    const queued = snapshot.entries.filter(e => BUSY_PHASES.includes(e.phase) && e.questId !== snapshot.activeQuestId);
+
+    function enable() {
+        if (!hasAutoConsent()) {
+            openAutoConsent(() => {
+                setAutoEnabled(true);
+            });
+            return;
+        }
+        setAutoEnabled(true);
+    }
+
+    const log = [...snapshot.log].reverse();
+
+    return (
+        <div className="vc-qt-tab">
+            <div className="vc-qt-warnbox">
+                <div className="vc-qt-warnbox-title">⚠️ {t("autoWarningTitle")}</div>
+                <p>{t("autoWarningBody")}</p>
+                {!consent && (
+                    <Button size="small" variant="dangerPrimary" onClick={enable}>
+                        {t("autoEnable")}
+                    </Button>
+                )}
+            </div>
+
+            <div className="vc-qt-summary">
+                <span>{snapshot.running ? t("autoStatusRunning") : t("autoStatusIdle")}</span>
+                <Button
+                    size="small"
+                    variant={snapshot.running ? "dangerPrimary" : "primary"}
+                    onClick={() => setAutoEnabled(!snapshot.running)}
+                >
+                    {snapshot.running ? t("autoDisable") : t("autoEnable")}
+                </Button>
+            </div>
+
+            {activeEntry && (
+                <div className="vc-qt-auto-section">
+                    <div className="vc-qt-row"><b>{t("autoCurrent")}</b></div>
+                    <AutoEntryCard entry={activeEntry} />
+                </div>
+            )}
+
+            <div className="vc-qt-auto-section">
+                <div className="vc-qt-row">
+                    <b>{t("autoQueue")}</b>
+                    <span className="vc-qt-meta">{queued.length}</span>
+                </div>
+                {queued.length
+                    ? queued.map(e => <AutoEntryCard key={e.questId} entry={e} />)
+                    : <div className="vc-qt-empty">{t("autoQueueEmpty")}</div>}
+            </div>
+
+            <div className="vc-qt-auto-section">
+                <div className="vc-qt-row">
+                    <b>{t("autoLogTitle")}</b>
+                    <Button size="small" variant="secondary" onClick={clearAutoLog}>{t("autoClearLog")}</Button>
+                </div>
+                {log.length
+                    ? (
+                        <div className="vc-qt-log">
+                            {log.map((line, index) => (
+                                <div key={index} className={"vc-qt-logline vc-qt-log-" + line.level}>
+                                    <span className="vc-qt-logtime">{new Date(line.time).toLocaleTimeString()}</span>
+                                    <span>{line.text}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )
+                    : <div className="vc-qt-empty">{t("autoEmptyLog")}</div>}
+            </div>
+
+            <div className="vc-qt-footer">{t("autoSettingsHint")}</div>
         </div>
     );
 }
@@ -279,7 +523,9 @@ function HistoryTab() {
 }
 
 function QuestPanel({ modalProps }: { modalProps: RenderModalProps; }) {
-    const [tab, setTab] = useState<"quests" | "history">("quests");
+    const [tab, setTab] = useState<"quests" | "auto" | "history">("quests");
+    const snapshot = useAutoSnapshot();
+    const running = snapshot.running || isAutoRunning();
 
     return (
         <Modal
@@ -292,10 +538,15 @@ function QuestPanel({ modalProps }: { modalProps: RenderModalProps; }) {
             <div className="vc-qt-root">
                 <div className="vc-qt-tabs">
                     <Chip active={tab === "quests"} onClick={() => setTab("quests")}>{t("tabQuests")}</Chip>
+                    <Chip active={tab === "auto"} onClick={() => setTab("auto")}>⚙️ {t("tabAuto")}</Chip>
                     <Chip active={tab === "history"} onClick={() => setTab("history")}>{t("tabHistory")}</Chip>
                 </div>
-                {tab === "quests" ? <QuestsTab /> : <HistoryTab />}
-                <div className="vc-qt-footer">🔒 {t("readOnlyFooter")}</div>
+                {tab === "quests" && <QuestsTab snapshot={snapshot} />}
+                {tab === "auto" && <AutoTab snapshot={snapshot} />}
+                {tab === "history" && <HistoryTab />}
+                <div className="vc-qt-footer">
+                    {running ? `⚠️ ${t("autoFooter")}` : `🔒 ${t("readOnlyFooter")}`}
+                </div>
             </div>
         </Modal>
     );

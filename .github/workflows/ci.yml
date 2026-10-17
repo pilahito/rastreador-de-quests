@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    name: Pruebas de lógica pura
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Ejecutar pruebas
+        run: node --test tests/auto.test.mjs
+
+  build:
+    name: Compila dentro de Vencord
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Activar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Clonar Vencord
+        run: git clone --depth 1 https://github.com/Vendicated/Vencord.git vencord
+
+      - name: Copiar el plugin
+        run: |
+          mkdir -p vencord/src/userplugins/questTracker
+          cp -R src/. vencord/src/userplugins/questTracker/
+
+      - name: Instalar dependencias de Vencord
+        working-directory: vencord
+        run: pnpm install --frozen-lockfile
+
+      - name: Comprobar tipos
+        working-directory: vencord
+        run: pnpm testTsc
+
+      - name: Compilar
+        working-directory: vencord
+        run: pnpm build
