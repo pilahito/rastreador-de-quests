@@ -259,6 +259,7 @@ rastreador-de-quests/
 ├── scripts/               # instaladores y empaquetado
 ├── install.bat
 ├── CHANGELOG.md
+├── ROADMAP.md
 ├── THIRD_PARTY_NOTICES.md
 └── LICENSE
 ```

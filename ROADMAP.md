@@ -1,8 +1,20 @@
-# Roadmap — QuestTracker (Vencord)
+# Hoja de ruta — Rastreador de Quests (Vencord)
 
-Plugin de Vencord para **ayudarte a hacer** las misiones de Discord Quests.
-Solo lectura del progreso real; **nunca** automatiza ni simula vídeo, juego o
-streaming.
+Plugin de Vencord para **ver** las Discord Quests y, **solo si tú lo activas**, completarlas por ti.
+El rastreador es de solo lectura y no envía nada; el modo automático es opcional, viene apagado,
+exige aceptar un aviso de riesgo y se puede detener en cualquier momento.
+
+## Hecho en 2.0.0
+
+- Modo automático opcional: aceptar la Quest, ver vídeo, jugar en escritorio, actividad y stream
+  como intento; reclamar la recompensa es opcional y está apagado por defecto.
+- Aviso de riesgo antes de activar, parada automática si Discord suspende las Quests y limpieza
+  (con restauración) de todo lo que se simula.
+- Panel con pestaña **Automático** (tarea actual, cola y registro) y botones **Auto** / **Reclamar**
+  por Quest.
+- Lógica pura con 15 pruebas (`node --test`) y CI de GitHub Actions.
+- README, CHANGELOG y plantillas de issues en español; plugin renombrado a **RastreadorDeQuests**.
+- Instaladores corregidos para copiar la carpeta `src/auto/` completa.
 
 ## Hecho en 1.1.0
 
@@ -12,13 +24,17 @@ streaming.
 
 ## Pendiente
 
-- Probar en Discord real con misiones activas.
-- Ajustar la ruta / acción «Abrir en Discord» si hace falta.
-- Capturas de pantalla del panel **sin datos personales** (sin nombre de
-  usuario real, email ni IDs) para README y releases.
+- Probar en directo con Quests activas de cada tipo (vídeo, jugar, actividad) en Stable y Canary.
+- Capturas de pantalla del panel **sin datos personales** (sin usuario real, email ni IDs) para
+  README y releases.
+- Seguir los cambios de nombres internos de Discord (stores y eventos) sin añadir evasión de detección.
+- Revisar las Quests de stream cuando Discord cambie sus requisitos (hoy exige Go Live real y otra
+  persona en la llamada).
 
-## Alcance (no negociable)
+## Alcance
 
-- Solo lectura de la API / estado que Discord ya expone al cliente.
-- Nunca completar misiones automáticamente ni engañar a Discord o a los
-  anunciantes. El README del proyecto lo prohíbe y aquí se respeta.
+- **Rastreador:** solo lee el estado que el cliente ya tiene; no envía nada ni llama a la API.
+- **Automatización:** opcional, consentida y limitada a lo que el cliente puede conducir. Todo lo
+  simulado se limpia al detener.
+- **Nunca:** saltar captchas, pedir OAuth, simular logros dentro de actividades, automatizar
+  consola/móvil, evadir detección ni activar la automatización por defecto.
