@@ -119,8 +119,8 @@ ZIP y los badges históricos no se rompen. La carpeta que se copia a Vencord sig
 
 | Acción | Cómo |
 | --- | --- |
-| Abrir el panel | Botón 🏆 de la barra del chat, `/quests` o Vencord Toolbox → *QuestTracker: Quests* |
-| Activar/detener el modo automático | Interruptor de la barra superior del panel, pestaña **⚙️ Automático**, o `/questauto` |
+| Abrir el panel | Botón 🏆 de la barra del chat, `/quests` o Vencord Toolbox → *Rastreador de Quests: Quests* |
+| Activar/detener el modo automático | Interruptor de la barra superior del panel, pestaña **⚙️ Automático**, `/questauto` o Toolbox |
 | Completar una sola Quest | Botón **▶ Auto** en su tarjeta (no hace falta encender el interruptor maestro) |
 | Reclamar una recompensa | Botón **Reclamar** en una Quest completada |
 | Ver qué está haciendo | Pestaña **⚙️ Automático**: tarea actual, cola y registro con hora |
