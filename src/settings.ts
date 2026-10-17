@@ -149,5 +149,37 @@ export const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Also log the automation to the console (debug) / Escribir también el registro automático en la consola",
         default: false
+    },
+    autoHumanPacing: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Pacing that looks human: thinks for a few seconds before each action, leaves gaps between quests, keeps the " +
+            "game 'open' a bit longer after finishing and waits before claiming. / Ritmo más humano: piensa unos segundos " +
+            "antes de cada acción, deja pausas entre Quests, mantiene el juego abierto un poco más y espera antes de reclamar.",
+        default: true
+    },
+    autoVideoPip: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Play the quest's real video in a floating Picture-in-Picture window while the engine completes the watch-video " +
+            "quest. It does not block the mouse or the rest of the desktop, resumes itself if paused and is muted. / " +
+            "Reproduce el vídeo real de la Quest en una ventana flotante (PiP) mientras el motor completa el progreso. " +
+            "No bloquea el ratón ni el escritorio, se reanuda si se pausa y está silenciada.",
+        default: true
+    },
+    autoVideoSound: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Start the quest video with sound. Off by default (muted). You can also toggle it from the 🔇/🔊 button on " +
+            "the floating video. / Empezar el vídeo con sonido. Apagado por defecto (silenciado). También puedes " +
+            "cambiarlo con el botón 🔇/🔊 del vídeo flotante.",
+        default: false
+    },
+    showQuestPageOverlay: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Show a floating progress panel on Discord's Quests page (/quest-home) with every quest's percentage, reward " +
+            "and time left. / Muestra un panel flotante con el progreso en la página de Misiones de Discord.",
+        default: true
     }
 });

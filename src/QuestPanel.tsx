@@ -24,6 +24,7 @@ import {
     setAutoEnabled,
     subscribeAuto
 } from "./auto/engine";
+import { warmQuestVideoWindow } from "./auto/pipVideo";
 import { openAutoConsent } from "./AutoConsent";
 import { clearHistory, getHistory, HistoryEntry } from "./history";
 import { formatDate, formatDuration, StringKey, t } from "./i18n";
@@ -279,6 +280,8 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
     }, [quests, query, status, type, sort]);
 
     function enableAutomation() {
+        // Gesto de usuario: deja lista la ventana flotante del vídeo.
+        if (settings.store.autoVideoPip) void warmQuestVideoWindow();
         if (!hasAutoConsent()) {
             openAutoConsent(() => {
                 setAutoEnabled(true);
@@ -293,6 +296,7 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
     }
 
     function runOne(q: QuestInfo) {
+        if (settings.store.autoVideoPip) void warmQuestVideoWindow();
         if (!hasAutoConsent()) {
             openAutoConsent(() => {
                 if (!autoCompleteQuest(q.id)) showToast({ text: t("autoConsentMissing"), variant: "danger" } as any);
@@ -397,6 +401,7 @@ function AutoTab({ snapshot }: { snapshot: AutoSnapshot; }) {
     const queued = snapshot.entries.filter(e => BUSY_PHASES.includes(e.phase) && e.questId !== snapshot.activeQuestId);
 
     function enable() {
+        if (settings.store.autoVideoPip) void warmQuestVideoWindow();
         if (!hasAutoConsent()) {
             openAutoConsent(() => {
                 setAutoEnabled(true);
@@ -553,5 +558,8 @@ function QuestPanel({ modalProps }: { modalProps: RenderModalProps; }) {
 }
 
 export function openQuestPanel() {
+    // Este clic suele ser un gesto de usuario: aprovecharlo para dejar lista la ventana
+    // flotante del vídeo (Document PiP exige activación por gesto).
+    if (settings.store.autoVideoPip) void warmQuestVideoWindow();
     openModal(modalProps => <QuestPanel modalProps={modalProps} />);
 }

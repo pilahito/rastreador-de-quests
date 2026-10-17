@@ -197,7 +197,28 @@ const es = {
     notifAutoSuspendedTitle: "Quests suspendidas en tu cuenta",
     notifAutoSuspendedBody: "Discord bloqueó el acceso a Quests. El modo automático se detuvo.",
     notifAutoClaimFailedTitle: "No se pudo reclamar la recompensa",
-    notifAutoClaimFailedBody: "{name} — reclámala tú en Discord (posible captcha)."
+    notifAutoClaimFailedBody: "{name} — reclámala tú en Discord (posible captcha).",
+
+    overlayTitle: "Progreso de Misiones",
+    overlayOpenPanel: "Abrir panel",
+    overlayNoQuests: "No hay Quests disponibles.",
+    overlayClaimable: "¡Recompensa lista!",
+    overlayAutoWorking: "Auto: trabajando en {name}",
+    overlayAutoWorkingPct: "Auto: {name} · {p}%",
+    overlayAutoWaiting: "Auto en marcha",
+    pipIdle: "Aquí saldrá el vídeo de la Quest.",
+    pipClose: "Cerrar vídeo",
+    pipPopout: "Sacar a ventana flotante",
+    pipMute: "Silenciar",
+    pipUnmute: "Activar sonido",
+    overlayAutoOff: "Auto detenido",
+    overlayMinimize: "Minimizar",
+    overlayExpand: "Expandir",
+    overlayMaximize: "Maximizar",
+    overlayRestore: "Restaurar tamaño",
+    overlayStop: "Detener la automatización",
+    overlayStart: "Activar la automatización",
+    overlayResize: "Arrastra para ensanchar"
 };
 
 const en: typeof es = {
@@ -383,7 +404,28 @@ const en: typeof es = {
     notifAutoSuspendedTitle: "Quest access suspended on your account",
     notifAutoSuspendedBody: "Discord locked Quest access. Automation was stopped.",
     notifAutoClaimFailedTitle: "Could not claim the reward",
-    notifAutoClaimFailedBody: "{name} — claim it yourself in Discord (possible captcha)."
+    notifAutoClaimFailedBody: "{name} — claim it yourself in Discord (possible captcha).",
+
+    overlayTitle: "Quest progress",
+    overlayOpenPanel: "Open panel",
+    overlayNoQuests: "No quests available.",
+    overlayClaimable: "Reward ready!",
+    overlayAutoWorking: "Auto: working on {name}",
+    overlayAutoWorkingPct: "Auto: {name} · {p}%",
+    overlayAutoWaiting: "Auto running",
+    pipIdle: "The quest video will play here.",
+    pipClose: "Close video",
+    pipPopout: "Pop out to floating window",
+    pipMute: "Mute",
+    pipUnmute: "Unmute",
+    overlayAutoOff: "Auto stopped",
+    overlayMinimize: "Minimize",
+    overlayExpand: "Expand",
+    overlayMaximize: "Maximize",
+    overlayRestore: "Restore size",
+    overlayStop: "Stop automation",
+    overlayStart: "Start automation",
+    overlayResize: "Drag to widen"
 };
 
 const strings = { es, en };

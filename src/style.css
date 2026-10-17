@@ -402,3 +402,451 @@
     gap: 8px;
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Progreso en la página de Misiones / Quests page overlay              */
+/* ------------------------------------------------------------------ */
+
+#vc-qt-questpage {
+    position: fixed;
+    top: 72px;
+    right: 16px;
+    z-index: 1200;
+    width: 330px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 160px);
+    overflow: hidden auto;
+    pointer-events: none;
+}
+
+.vc-qt-overlay {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--border-subtle, rgb(255 255 255 / 8%));
+    border-radius: 14px;
+    background: var(--background-floating, #111214);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 45%);
+    color: var(--text-default, var(--text-normal, #dbdee1));
+    pointer-events: auto;
+}
+
+.vc-qt-overlay-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.vc-qt-overlay-title {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.vc-qt-overlay-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.vc-qt-overlay-btn {
+    padding: 3px 10px;
+    border: 1px solid var(--border-subtle, rgb(255 255 255 / 10%));
+    border-radius: 999px;
+    background: var(--background-secondary, #2b2d31);
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.vc-qt-overlay-btn:hover {
+    background: var(--background-modifier-hover, rgb(255 255 255 / 8%));
+}
+
+.vc-qt-overlay-auto {
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgb(35 165 90 / 15%);
+    color: #23a55a;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.vc-qt-overlay-empty {
+    padding: 16px 8px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-overlay-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    border-radius: 10px;
+    background: var(--background-secondary, #2b2d31);
+}
+
+.vc-qt-overlay-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.vc-qt-overlay-name {
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-qt-overlay-status {
+    flex-shrink: 0;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--background-tertiary, #1e1f22);
+    color: var(--text-muted, #949ba4);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.vc-qt-overlay-status-completed {
+    background: rgb(35 165 90 / 18%);
+    color: #23a55a;
+}
+
+.vc-qt-overlay-status-inProgress {
+    background: rgb(88 101 242 / 18%);
+    color: #8b95ff;
+}
+
+.vc-qt-overlay-status-claimed {
+    background: rgb(240 178 50 / 18%);
+    color: #f0b232;
+}
+
+.vc-qt-overlay-bar {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--background-tertiary, #1e1f22);
+}
+
+.vc-qt-overlay-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #5865f2, #7b8cff);
+    transition: width 0.5s ease;
+}
+
+.vc-qt-overlay-fill-completed,
+.vc-qt-overlay-fill-claimed {
+    background: linear-gradient(90deg, #23a55a, #3ddc84);
+}
+
+.vc-qt-overlay-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-overlay-soon {
+    color: #f0b232;
+    font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ */
+/* Vídeo flotante de reserva / fallback floating video                */
+/* ------------------------------------------------------------------ */
+
+#vc-qt-pip-fallback {
+    position: fixed;
+    right: 20px;
+    bottom: 96px;
+    z-index: 1500;
+    width: 360px;
+    height: 203px;
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 15%);
+    border-radius: 12px;
+    background: #000;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 55%);
+}
+
+#vc-qt-pip-fallback video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+.vc-qt-pip-idle {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    color: #dbdee1;
+    font-size: 12px;
+    text-align: center;
+}
+
+.vc-qt-pip-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    border: none;
+    background: rgb(0 0 0 / 55%);
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    border-radius: 999px;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+}
+
+/* Controles y modos del panel flotante / overlay controls and modes */
+
+.vc-qt-overlay {
+    width: 100%;
+}
+
+.vc-qt-overlay-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--border-subtle, rgb(255 255 255 / 12%));
+    border-radius: 6px;
+    background: var(--background-secondary, #2b2d31);
+    color: inherit;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.vc-qt-overlay-icon:hover {
+    background: var(--background-modifier-hover, rgb(255 255 255 / 10%));
+}
+
+.vc-qt-overlay-summary {
+    font-size: 11px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-overlay-auto-off {
+    background: rgb(148 155 164 / 12%);
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-overlay-pct {
+    flex-shrink: 0;
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-overlay-row {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.vc-qt-overlay-row:hover {
+    background: var(--background-modifier-hover, rgb(255 255 255 / 7%));
+}
+
+.vc-qt-overlay-mode-wide .vc-qt-overlay-name {
+    font-size: 13px;
+}
+
+.vc-qt-overlay-mode-mini {
+    padding: 10px 12px;
+}
+
+.vc-qt-overlay-mini {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted, #949ba4);
+    text-align: right;
+}
+
+/* Cabecera compacta y controles del vídeo / compact header + video controls */
+
+.vc-qt-overlay-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-qt-overlay-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 4px;
+}
+
+.vc-qt-overlay-mode-mini .vc-qt-overlay-head {
+    gap: 6px;
+}
+
+.vc-qt-overlay-mode-mini .vc-qt-overlay-title {
+    font-size: 13px;
+}
+
+.vc-qt-overlay-mode-mini .vc-qt-overlay-btn {
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+.vc-qt-overlay-mode-mini .vc-qt-overlay-auto,
+.vc-qt-overlay-mode-mini .vc-qt-overlay-mini {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-qt-pip-bar {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    z-index: 2;
+    display: flex;
+    gap: 6px;
+}
+
+.vc-qt-pip-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 55%);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.vc-qt-pip-btn:hover {
+    background: rgb(0 0 0 / 80%);
+}
+
+#vc-qt-pip-fallback {
+    position: fixed;
+}
+
+#vc-qt-pip-fallback video {
+    display: block;
+}
+
+/* Ajustes finos de la cabecera y del texto largo / final header + text polish */
+
+.vc-qt-overlay-auto {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-qt-overlay-meta {
+    min-width: 0;
+}
+
+.vc-qt-overlay-meta span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-qt-overlay-meta span:last-child {
+    flex-shrink: 0;
+}
+
+.vc-qt-overlay-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.vc-qt-overlay-mode-wide .vc-qt-overlay-row {
+    padding: 9px 10px;
+}
+
+.vc-qt-overlay-mode-wide .vc-qt-overlay-meta {
+    font-size: 12px;
+}
+
+/* Panel arrastrable / draggable overlay */
+
+.vc-qt-overlay-head {
+    cursor: grab;
+    user-select: none;
+}
+
+.vc-qt-dragging {
+    opacity: 0.96;
+}
+
+.vc-qt-dragging .vc-qt-overlay-head {
+    cursor: grabbing;
+}
+
+#vc-qt-questpage {
+    touch-action: none;
+}
+
+/* Redimensionar el panel / resize grip */
+
+.vc-qt-overlay {
+    position: relative;
+}
+
+.vc-qt-overlay-grip {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 12px;
+    height: 12px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    border-radius: 2px;
+    opacity: 0.35;
+    cursor: nwse-resize;
+}
+
+.vc-qt-overlay-grip:hover {
+    opacity: 0.85;
+}
+
+.vc-qt-resizing {
+    user-select: none;
+}
+
+/* El contenedor no recorta; el scroll vive en el panel para que el asa quede visible */
+
+#vc-qt-questpage {
+    overflow: visible;
+}
+
+.vc-qt-overlay {
+    max-height: calc(100vh - 170px);
+    overflow-y: auto;
+}
+
+.vc-qt-overlay-grip {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    pointer-events: auto;
+}

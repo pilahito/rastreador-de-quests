@@ -24,11 +24,13 @@
 
 import { ChannelStore, FluxDispatcher, GuildChannelStore, UserStore } from "@webpack/common";
 
-import { StringKey,t } from "../i18n";
+import { StringKey, t } from "../i18n";
+import { parseQuest } from "../quests";
 import { settings } from "../settings";
 import { getQuestStore, logger } from "../store";
 import { setAutoEnabledHook, setConsentHook } from "./bridge";
-import { FakeGame,startFakeGame, stopAllFakeGames, stopFakeGame } from "./gameSpoof";
+import { FakeGame, startFakeGame, stopAllFakeGames, stopFakeGame } from "./gameSpoof";
+import { closeQuestVideoWindow, hideQuestVideo, showQuestVideo } from "./pipVideo";
 import { repairPresenceIfNeeded, restorePresence, suppressPresence } from "./presence";
 import {
     DetectedTask,
@@ -220,6 +222,7 @@ export function shutdownAuto(): void {
     stopAuto();
     stopAllFakeGames();
     stopFakeStream();
+    closeQuestVideoWindow();
     void restorePresence();
 }
 
@@ -234,7 +237,11 @@ export function startAuto(): boolean {
     sessionBlocked.clear();
     addLog("info", t("autoStarted"));
     startTimer();
-    void tick();
+    // Un humano no arranca en el mismo instante en que pulsa: pequeño margen.
+    const startDelay = humanOn() ? jitter(3000, 12000) : 0;
+    setTimeout(() => {
+        if (running) void tick();
+    }, startDelay);
     return true;
 }
 
@@ -284,6 +291,37 @@ function alive(gen: number): boolean {
 
 function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/* ------------------------------------------------------------------ */
+/* Ritmo humano / human-like pacing                                    */
+/* ------------------------------------------------------------------ */
+
+function humanOn(): boolean {
+    return settings.store.autoHumanPacing !== false;
+}
+
+/** Pausa "de pensar" antes de actuar; devuelve false si se detuvo el motor. */
+async function think(gen: number, minMs: number, maxMs: number): Promise<boolean> {
+    if (!humanOn()) return alive(gen);
+    await sleep(jitter(minMs, maxMs));
+    return alive(gen);
+}
+
+/** Mantiene una tarea "abierta" un rato más, comprobando que sigue activa. */
+async function keepAliveFor(gen: number, minMs: number, maxMs: number): Promise<void> {
+    if (!humanOn()) return;
+    let left = jitter(minMs, maxMs);
+    while (left > 0 && alive(gen)) {
+        const step = Math.min(left, 5000);
+        await sleep(step);
+        left -= step;
+    }
+}
+
+/** Pausa entre Quests: un humano no encadena una detrás de otra al instante. */
+function questGapMs(): number {
+    return humanOn() ? jitter(20_000, 80_000) : 1500;
 }
 
 /* ------------------------------------------------------------------ */
@@ -374,6 +412,10 @@ async function tick(): Promise<void> {
             return;
         }
 
+        // Un humano no empieza a la décima de segundo: se lo piensa un poco.
+        if (!await think(gen, 3000, 9000)) return;
+        if (activeQuestId) return;
+
         activeQuestId = String(candidate.id);
         publish();
         try {
@@ -386,10 +428,10 @@ async function tick(): Promise<void> {
         }
 
         if (!alive(gen)) return;
-        // Siguiente vuelta con una pausa corta, para no encadenar sin respirar.
+        // Siguiente vuelta con una pausa entre Quests, como una persona.
         setTimeout(() => {
             if (alive(gen)) void tick();
-        }, 1500);
+        }, questGapMs());
     } catch (e) {
         addLog("error", `${t("autoFailed")}: ${errorMessage(e)}`);
         logger.error("Auto tick failed", e);
@@ -489,6 +531,8 @@ async function runQuest(quest: any, gen: number): Promise<void> {
             return;
         }
         if (!alive(gen)) return;
+        // Tras aceptarla, un momento antes de empezar (leer la Quest, etc.).
+        if (!await think(gen, 1500, 4000)) return;
     }
 
     const startProgress = readProgressSeconds(quest.userStatus, detected.keyName);
@@ -532,43 +576,54 @@ async function runVideo(quest: any, id: string, name: string, detected: Detected
     let lastReportAt = Date.now();
     let failures = 0;
 
+    // El vídeo real de la Quest se ve en la ventana flotante mientras se completa.
+    const info = parseQuest(quest, Date.now());
+    if (settings.store.autoVideoPip) void showQuestVideo(info?.videoUrl, name);
+
     setEntry(id, name, { phase: "working", taskType: "VIDEO", cur: current, max: target, detail: t("autoWatching") });
 
-    while (alive(gen) && current < target) {
-        await sleep(jitter(VIDEO_INTERVAL_MIN, VIDEO_INTERVAL_MAX));
-        if (!alive(gen)) return { ok: false, error: t("autoStopped") };
+    try {
+        while (alive(gen) && current < target) {
+            const interval = humanOn()
+                ? jitter(9_000, 14_000)
+                : jitter(VIDEO_INTERVAL_MIN, VIDEO_INTERVAL_MAX);
+            await sleep(interval);
+            if (!alive(gen)) return { ok: false, error: t("autoStopped") };
 
-        const timestamp = nextVideoTimestamp(current, Date.now() - lastReportAt, target, 10, enrolledAt);
-        lastReportAt = Date.now();
+            const timestamp = nextVideoTimestamp(current, Date.now() - lastReportAt, target, 10, enrolledAt);
+            lastReportAt = Date.now();
 
-        try {
-            const response: any = await sendVideoProgress(id, timestamp);
-            failures = 0;
-            const served = response?.body?.progress?.[detected.keyName]?.value;
-            current = typeof served === "number" && served > current ? served : Math.max(current, timestamp);
+            try {
+                const response: any = await sendVideoProgress(id, timestamp);
+                failures = 0;
+                const served = response?.body?.progress?.[detected.keyName]?.value;
+                current = typeof served === "number" && served > current ? served : Math.max(current, timestamp);
 
-            setEntry(id, name, { phase: "working", taskType: "VIDEO", cur: current, max: target, detail: t("autoWatching") });
+                setEntry(id, name, { phase: "working", taskType: "VIDEO", cur: current, max: target, detail: t("autoWatching") });
 
-            if (response?.body?.completed_at != null || current >= target) {
-                return { ok: true };
+                if (response?.body?.completed_at != null || current >= target) {
+                    return { ok: true };
+                }
+            } catch (e) {
+                const status = httpErrorStatus(e);
+                if (isTerminalHttpStatus(status)) {
+                    return { ok: false, error: `${t("autoClientError")} (HTTP ${status}). ${errorMessage(e)}` };
+                }
+                if (++failures >= MAX_FAILURES) {
+                    return { ok: false, error: `${t("autoNetwork")}: ${errorMessage(e)}` };
+                }
+                addLog("warn", `${t("autoRetry")} ${failures}/${MAX_FAILURES}: ${errorMessage(e)}`);
             }
-        } catch (e) {
-            const status = httpErrorStatus(e);
-            if (isTerminalHttpStatus(status)) {
-                return { ok: false, error: `${t("autoClientError")} (HTTP ${status}). ${errorMessage(e)}` };
-            }
-            if (++failures >= MAX_FAILURES) {
-                return { ok: false, error: `${t("autoNetwork")}: ${errorMessage(e)}` };
-            }
-            addLog("warn", `${t("autoRetry")} ${failures}/${MAX_FAILURES}: ${errorMessage(e)}`);
+
+            if (Date.now() - startedAt > VIDEO_MAX_TIME) return { ok: false, error: t("autoTimeout") };
         }
 
-        if (Date.now() - startedAt > VIDEO_MAX_TIME) return { ok: false, error: t("autoTimeout") };
+        return alive(gen)
+            ? { ok: true }
+            : { ok: false, error: t("autoStopped") };
+    } finally {
+        hideQuestVideo();
     }
-
-    return alive(gen)
-        ? { ok: true }
-        : { ok: false, error: t("autoStopped") };
 }
 
 /* ----------------------- Juego de escritorio ---------------------- */
@@ -625,6 +680,10 @@ async function runGame(quest: any, id: string, name: string, detected: DetectedT
         // Si no hubo ni un latido, Discord no reconoció el juego: mejor decirlo claro.
         if (!result.ok && result.error === "no-heartbeat") {
             return { ok: false, error: t("autoNoHeartbeat", { minutes: Math.round(GAME_FIRST_HEARTBEAT_MS / 60000) }) };
+        }
+        if (result.ok) {
+            // Un humano no cierra el juego justo al cruzar el objetivo: se queda abierto un rato.
+            await keepAliveFor(gen, 45_000, 180_000);
         }
         return result.ok ? result : { ok: false, error: result.error ?? t("autoFailed") };
     } finally {
@@ -708,7 +767,7 @@ async function runActivity(quest: any, id: string, name: string, detected: Detec
         }
 
         if (Date.now() - startedAt > ACTIVITY_MAX_TIME) return { ok: false, error: t("autoTimeout") };
-        await sleep(jitter(19_000, 22_000));
+        await sleep(humanOn() ? jitter(22_000, 27_000) : jitter(19_000, 22_000));
     }
 
     return alive(gen) ? { ok: true } : { ok: false, error: t("autoStopped") };
@@ -813,6 +872,8 @@ async function finishQuest(id: string, name: string, detected: DetectedTask, tar
     }
 
     setEntry(id, name, { phase: "claiming", taskType: detected.type, cur, max: target, detail: t("autoClaiming") });
+    // Un humano tarda un poco en ir a reclamar la recompensa.
+    if (!await think(gen, 8000, 30000)) return;
     try {
         const response: any = await claimReward(id);
         const claimed = response?.body?.claimed_at != null || response?.status === 204;

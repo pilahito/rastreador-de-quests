@@ -30,6 +30,9 @@
 **Rastreador (siempre activo, no envía nada):**
 
 - **Panel de Quests** con el botón 🏆 de la barra del chat, el comando `/quests` o el menú Vencord Toolbox.
+- **Panel flotante en la propia página de Misiones** (`/quest-home`): progreso de todas las Quests con %, recompensa
+  y tiempo restante. Se puede **arrastrar**, **redimensionar** por la esquina, **minimizar/maximizar** y
+  **detener o activar** la automatización desde su cabecera; recuerda posición y tamaño.
 - Nombre, juego, editor, tipo de tarea (ver vídeo, jugar, stream, actividad), **progreso real** que el
   cliente ya conoce (barra, % y minutos), recompensa, tiempo restante y estado
   (**sin aceptar / en curso / completada / reclamada / caducada**).
@@ -45,6 +48,11 @@
 - Tipos que sabe conducir: **ver vídeo**, **jugar en escritorio**, **actividad** y, como intento,
   **stream** (Discord exige además un Go Live real y otra persona en la llamada, así que normalmente no
   se completa: el plugin lo intenta y te lo dice, no se queda colgado).
+- **Vídeo flotante**: en las Quests de vídeo se reproduce el vídeo real en un recuadro **silenciado** con
+  botón **🔇/🔊**. Al hacer clic fuera del recuadro salta a una **ventana flotante (PiP)** que queda por
+  encima, no se pausa y te deja seguir usando el ratón; si se pausa, se reanuda sola.
+- **Ritmo humano**: se lo piensa antes de cada acción, deja pausas entre Quests, mantiene el juego
+  "abierto" un rato más tras completar y espera antes de reclamar.
 - Al terminar **no reclama solo** salvo que lo actives: puedes reclamar con un clic desde el panel o en Discord.
 - Si Discord marca la cuenta con una **suspensión de Quests**, el motor **se para solo** y te avisa.
 - Todo lo que simula (juego, stream, ajuste de actividad) **se limpia al detener**: no deja nada a medias.
@@ -123,6 +131,10 @@ ZIP y los badges históricos no se rompen. La carpeta que se copia a Vencord sig
 | Activar/detener el modo automático | Interruptor de la barra superior del panel, pestaña **⚙️ Automático**, `/questauto` o Toolbox |
 | Completar una sola Quest | Botón **▶ Auto** en su tarjeta (no hace falta encender el interruptor maestro) |
 | Reclamar una recompensa | Botón **Reclamar** en una Quest completada |
+| Ver el progreso en Misiones | Abre **Discord → Misiones**: el panel flotante muestra el % de cada Quest y el de la tarea actual en su cabecera |
+| Mover / ensanchar el panel | Arrastra la **cabecera** para moverlo; arrastra la **esquina inferior derecha** para ensancharlo (doble clic en la cabecera lo devuelve a su sitio) |
+| Minimizar / maximizar / detener | Botones **—**, **⛶** y **⏹/▶** de la cabecera del panel flotante |
+| Silenciar o sacar el vídeo | Botón **🔇/🔊** en el recuadro del vídeo; **⧉** lo saca a ventana flotante (o haz clic fuera del recuadro) |
 | Ver qué está haciendo | Pestaña **⚙️ Automático**: tarea actual, cola y registro con hora |
 
 ## Ajustes
@@ -154,6 +166,10 @@ ZIP y los badges históricos no se rompen. La carpeta que se copia a Vencord sig
 | `autoStreams` | Intentar Quests de stream (normalmente no se completan) | `false` |
 | `autoHideActivity` | Ocultar "Jugando X" mientras dura el spoof y restaurarlo después | `true` |
 | `autoLogToConsole` | Escribir el registro automático también en la consola | `false` |
+| `autoHumanPacing` | Ritmo humano: pausas antes/entre acciones y esperas al reclamar | `true` |
+| `autoVideoPip` | Vídeo real de la Quest en recuadro flotante mientras se completa | `true` |
+| `autoVideoSound` | Empezar el vídeo con sonido (también se cambia con 🔇/🔊) | `false` |
+| `showQuestPageOverlay` | Panel flotante con progreso en la página de Misiones | `true` |
 
 ## Cómo funciona
 
@@ -186,8 +202,26 @@ Detalles de seguridad y reversibilidad:
 - **Captcha al reclamar**: si aparece, hay que reclamar a mano. Nunca se intenta saltar.
 - **Nombres internos de Discord**: cambian a menudo. El plugin tolera cambios de store y de eventos, pero
   no se ha probado contra todas las builds; si algo deja de funcionar, activa `autoLogToConsole` y abre un issue.
+- **Ventana flotante del vídeo (PiP)**: Electron no soporta el PiP de documento, así que se usa el PiP
+  nativo del vídeo. Chromium exige un **clic o tecla** para sacarlo a ventana; hasta entonces el vídeo se
+  ve en el recuadro dentro de Discord (también silenciado y con su botón de sonido).
 
 ## Preguntas frecuentes
+
+**¿Por qué el porcentaje sube despacio o parece parado?**
+En las Quests de jugar/stream el progreso lo acredita Discord con un latido cada ~60 s, así que el % de la
+tarea actual sube a saltos de un minuto (lo ves en la cabecera del panel flotante, junto al nombre de la
+tarea). En las de vídeo sube cada ~9–14 s. Las Quests aceptadas que aún esperan turno se quedan en 0 %
+hasta que el motor llega a ellas: va una cada vez.
+
+**¿Puedo ver el vídeo mientras uso el PC?**
+Sí. El vídeo de la Quest sale en un recuadro **silenciado** con botón 🔇/🔊; al hacer clic fuera del
+recuadro salta a una ventana flotante (PiP) que no se pausa y no bloquea el ratón. `autoVideoSound` lo
+hace empezar con sonido.
+
+**¿Cómo muevo o ensancho el panel flotante?**
+Arrastra su cabecera para moverlo y la esquina inferior derecha para ensancharlo. Recuerda posición y
+tamaño entre sesiones; doble clic en la cabecera lo devuelve a su sitio.
 
 **¿Me pueden banear?**
 Riesgo real: Discord sanciona la automatización de Quests desde 2026. El plugin viene apagado y avisa antes
@@ -237,12 +271,14 @@ rastreador-de-quests/
 ├── src/
 │   ├── index.tsx          # plugin, comandos, avisos, arranque del motor
 │   ├── QuestPanel.tsx     # panel: Quests, Automático, Historial
+│   ├── QuestOverlay.ts    # panel flotante en Misiones (arrastrar, tamaño, %, controles)
 │   ├── AutoConsent.tsx    # aviso de riesgo antes de activar
 │   ├── auto/
-│   │   ├── engine.ts      # motor: cola, tareas, reclamar, parada
+│   │   ├── engine.ts      # motor: cola, tareas, reclamar, parada, ritmo humano
 │   │   ├── questApi.ts    # enroll / claim / video-progress / heartbeat
 │   │   ├── gameSpoof.ts   # spoof de RunningGameStore + restore
 │   │   ├── streamSpoof.ts # spoof de ApplicationStreamingStore + restore
+│   │   ├── pipVideo.ts    # vídeo de la Quest en recuadro flotante / PiP
 │   │   ├── presence.ts    # ocultar/restaurar "Jugando X" (con reparación)
 │   │   ├── pure.ts        # lógica pura y testeable
 │   │   └── bridge.ts      # puente Ajustes ↔ motor

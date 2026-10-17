@@ -182,8 +182,12 @@ export function parseQuest(q: any, now = Date.now()): QuestInfo | undefined {
     const app = cfg.application ?? {};
     const videoTask = tasks.find(tk => tk.category === "video");
     const rawVideoTask = videoTask ? (cfg.taskConfigV2 ?? cfg.taskConfig ?? {})?.tasks?.[videoTask.key] : undefined;
-    const videoUrl = pick<string>(rawVideoTask, "assets.video.url", "assets.videoLowRes.url")
-        ?? pick<string>(cfg, "videoMetadata.assets.videoPlayerVideo.url");
+    // Los assets del vídeo llegan como ruta relativa del CDN (`quests/<id>/<archivo>.mp4`).
+    const rawVideoUrl = pick<string>(rawVideoTask, "assets.video.url", "assets.videoLowRes.url")
+        ?? pick<string>(cfg, "videoMetadata.assets.videoPlayerVideo.url", "assets.heroVideo");
+    const videoUrl = rawVideoUrl
+        ? (isSafeHttpUrl(rawVideoUrl) ? rawVideoUrl : assetUrl(id, rawVideoUrl))
+        : undefined;
     const gameUrl = pick<string>(app, "link") ?? pick<string>(cfg, "ctaConfig.link", "cta_config.link");
 
     return {
@@ -204,7 +208,7 @@ export function parseQuest(q: any, now = Date.now()): QuestInfo | undefined {
         claimedAt,
         status,
         gameUrl: gameUrl && isSafeHttpUrl(gameUrl) ? gameUrl : undefined,
-        videoUrl: videoUrl && isSafeHttpUrl(videoUrl) ? videoUrl : undefined,
+        videoUrl,
         imageUrl: assetUrl(id, pick(cfg, "assets.gameTile", "assets.game_tile", "assets.logotype", "assets.hero"))
     };
 }

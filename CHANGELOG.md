@@ -3,6 +3,27 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.1.0] — 2026-10-18
+
+### Añadido
+
+- **Panel flotante en la página de Misiones** (`/quest-home`): progreso de todas las Quests con %, recompensa,
+  tiempo y estado; se arrastra por la cabecera, se ensancha por la esquina, se minimiza/maximiza y permite
+  detener o activar la automatización. Recuerda posición y tamaño.
+- **Porcentaje de la tarea actual en la cabecera** (visible también minimizado), que sube con el progreso real.
+- **Vídeo real de la Quest en recuadro flotante**, silenciado por defecto con botón **🔇/🔊**; al hacer clic
+  fuera salta a **ventana flotante PiP** (encima de todo, sin pausa, sin bloquear el ratón) y se reanuda solo
+  si se pausa. Ajustes `autoVideoPip` y `autoVideoSound`.
+- **Ritmo humano** (`autoHumanPacing`): pausas antes de cada acción, huecos entre Quests, deja el juego
+  abierto un rato más al terminar y espera antes de reclamar.
+- Ajuste `showQuestPageOverlay` para ocultar el panel de Misiones.
+
+### Corregido
+
+- Las URLs de vídeo de las Quests llegan como ruta relativa del CDN y no se resolvían: ahora se convierten
+  a `https://cdn.discordapp.com/...` y el vídeo flotante puede reproducirlas.
+- El panel flotante respeta el tamaño de la ventana y no recorta su contenido ni el asa de redimensionado.
+
 ## [2.0.0] — 2026-10-18
 
 ### Añadido

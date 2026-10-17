@@ -25,10 +25,12 @@ import { showNotification } from "@api/Notifications";
 import definePlugin from "@utils/types";
 import { showToast } from "@webpack/common";
 
-import { hasAutoConsent, initAuto, isAutoRunning, setAutoEnabled, shutdownAuto } from "./auto/engine";
+import { getAutoSnapshot, hasAutoConsent, initAuto, isAutoRunning, setAutoEnabled, shutdownAuto } from "./auto/engine";
+import { hideQuestVideo, showQuestVideo, warmQuestVideoWindow } from "./auto/pipVideo";
 import { openAutoConsent } from "./AutoConsent";
 import { recordHistory } from "./history";
 import { setLang, t } from "./i18n";
+import { startQuestPageOverlay, stopQuestPageOverlay } from "./QuestOverlay";
 import { openQuestPanel, readCurrentQuests } from "./QuestPanel";
 import { isExpiringSoon, QuestInfo } from "./quests";
 import { settings } from "./settings";
@@ -84,6 +86,8 @@ function notify(title: string, body: string) {
 /** Activa o desactiva el modo automático; si falta el aviso de riesgo, lo abre. */
 function toggleAutomation() {
     setLang(settings.store.lang);
+    // Aprovecha el clic (gesto de usuario) para dejar lista la ventana flotante del vídeo.
+    if (settings.store.autoVideoPip) void warmQuestVideoWindow();
     if (!hasAutoConsent()) {
         showToast({ text: t("autoConsentNeeded"), variant: "danger" } as any);
         openAutoConsent(() => {
@@ -260,9 +264,19 @@ export default definePlugin({
     start() {
         setLang(settings.store.lang);
         initAuto(notify);
+        startQuestPageOverlay();
         retryTimer = setTimeout(() => attachToStore(0), 3000);
         // Periodic re-check for time-based warnings / comprobación periódica de caducidad
         intervalTimer = setInterval(scheduleCheck, 5 * 60_000);
+
+        // Ayuda de depuración para devtools / devtools helper (solo lectura + prueba de vídeo).
+        (globalThis as any).QuestTrackerDebug = {
+            quests: () => readCurrentQuests().quests,
+            auto: () => getAutoSnapshot(),
+            openPanel: openQuestPanel,
+            showVideo: (url: string) => showQuestVideo(url, "test"),
+            hideVideo: () => hideQuestVideo()
+        };
     },
 
     stop() {
@@ -271,6 +285,10 @@ export default definePlugin({
         clearInterval(intervalTimer);
         unsubscribeStore?.();
         unsubscribeStore = undefined;
+        stopQuestPageOverlay();
         shutdownAuto();
+        try {
+            delete (globalThis as any).QuestTrackerDebug;
+        } catch { /* nada */ }
     }
 });
