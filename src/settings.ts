@@ -191,5 +191,12 @@ export const settings = definePluginSettings({
             "Show a floating progress panel on Discord's Quests page (/quest-home) with every quest's percentage, reward " +
             "and time left. / Muestra un panel flotante con el progreso en la página de Misiones de Discord.",
         default: true
+    },
+    externalLinksConfirm: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Ask before opening an external link in the system browser (the plugin never opens the browser by itself). / " +
+            "Preguntar antes de abrir un enlace externo en el navegador (el plugin nunca abre el navegador por sí solo).",
+        default: true
     }
 });

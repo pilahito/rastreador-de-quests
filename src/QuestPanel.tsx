@@ -232,11 +232,6 @@ function QuestCard({ q, entry, selected, onAuto, onClaim, onCancel, onToggleSele
                             {t("openGame")}
                         </Button>
                     )}
-                    {q.videoUrl && (
-                        <Button size="small" variant="secondary" title={t("externalNote")} onClick={() => openExternal(q.videoUrl)}>
-                            {t("openVideo")}
-                        </Button>
-                    )}
                 </div>
             </div>
         </div>

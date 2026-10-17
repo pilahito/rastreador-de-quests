@@ -67,6 +67,7 @@ const es = {
     openGame: "Página del juego",
     openVideo: "Ver vídeo (navegador)",
     externalNote: "Se abre fuera de Discord: no suma progreso.",
+    externalConfirm: "¿Abrir este enlace en tu navegador? Discord no suma progreso.",
 
     emptyQuests: "No hay Quests que coincidan.",
     storeMissing: "No encuentro el store de Quests. Abre una vez Descubrir → Quests y pulsa Actualizar.",
@@ -289,6 +290,7 @@ const en: typeof es = {
     openGame: "Game page",
     openVideo: "Watch video (browser)",
     externalNote: "Opens outside Discord: it does not add progress.",
+    externalConfirm: "Open this link in your browser? It does not add Discord progress.",
 
     emptyQuests: "No Quests match.",
     storeMissing: "Quest store not found. Open Discover → Quests once and press Refresh.",

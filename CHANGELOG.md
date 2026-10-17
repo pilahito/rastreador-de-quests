@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.2] — 2026-10-18
+
+### Cambiado
+
+- El plugin ya **no abre el navegador** salvo que pulses un enlace externo y **confirmes** el aviso
+  (`externalLinksConfirm`, activado por defecto). Evita ventanas de Brave/Chrome inesperadas.
+- Se ha quitado el botón “Ver vídeo (navegador)”; el vídeo de la Quest ya se ve en el recuadro flotante del
+  plugin, así que no hace falta abrir nada fuera.
+
 ## [2.2.1] — 2026-10-18
 
 ### Corregido

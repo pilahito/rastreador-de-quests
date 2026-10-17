@@ -11,6 +11,8 @@
 
 import { closeAllModals, NavigationRouter, SettingsRouter, showToast } from "@webpack/common";
 
+import { t } from "./i18n";
+import { settings } from "./settings";
 import { logger } from "./store";
 
 /** Opens Discord's own Quests page so YOU can do the quest. */
@@ -36,13 +38,17 @@ export function openQuestsInDiscord(route = "/quest-home") {
     showToast({ text: "Discord → Quests" });
 }
 
-/** Opens an external https link in the system browser. */
+/** Opens an external https link in the system browser (solo tras confirmar). */
 export function openExternal(url: string | undefined) {
     if (!url) return;
     try {
         const u = new URL(url);
         if (u.protocol !== "https:" && u.protocol !== "http:") return;
     } catch {
+        return;
+    }
+    // Nunca se abre el navegador sin permiso: evita ventanas inesperadas.
+    if (settings.store.externalLinksConfirm !== false && !window.confirm(t("externalConfirm"))) {
         return;
     }
     try {
