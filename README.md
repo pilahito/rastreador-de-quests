@@ -51,6 +51,8 @@
 - **Vídeo flotante**: en las Quests de vídeo se reproduce el vídeo real en un recuadro **silenciado** con
   botón **🔇/🔊**. Al hacer clic fuera del recuadro salta a una **ventana flotante (PiP)** que queda por
   encima, no se pausa y te deja seguir usando el ratón; si se pausa, se reanuda sola.
+- **Selector Todas / Seleccionadas**: automatiza todas las Quests permitidas o **solo las que marques con ☆**
+  en el panel (`autoScope`). El botón ☆ de cada tarjeta las añade o quita de la selección.
 - **Ritmo humano**: se lo piensa antes de cada acción, deja pausas entre Quests, mantiene el juego
   "abierto" un rato más tras completar y espera antes de reclamar.
 - Al terminar **no reclama solo** salvo que lo actives: puedes reclamar con un clic desde el panel o en Discord.
@@ -132,6 +134,7 @@ ZIP y los badges históricos no se rompen. La carpeta que se copia a Vencord sig
 | Completar una sola Quest | Botón **▶ Auto** en su tarjeta (no hace falta encender el interruptor maestro) |
 | Reclamar una recompensa | Botón **Reclamar** en una Quest completada |
 | Ver el progreso en Misiones | Abre **Discord → Misiones**: el panel flotante muestra el % de cada Quest y el de la tarea actual en su cabecera |
+| Elegir qué automatizar | En el panel, selector **Todas / Seleccionadas** y botón **☆** en cada Quest para marcar solo las que quieras |
 | Mover / ensanchar el panel | Arrastra la **cabecera** para moverlo; arrastra la **esquina inferior derecha** para ensancharlo (doble clic en la cabecera lo devuelve a su sitio) |
 | Minimizar / maximizar / detener | Botones **—**, **⛶** y **⏹/▶** de la cabecera del panel flotante |
 | Silenciar o sacar el vídeo | Botón **🔇/🔊** en el recuadro del vídeo; **⧉** lo saca a ventana flotante (o haz clic fuera del recuadro) |
@@ -167,6 +170,7 @@ ZIP y los badges históricos no se rompen. La carpeta que se copia a Vencord sig
 | `autoHideActivity` | Ocultar "Jugando X" mientras dura el spoof y restaurarlo después | `true` |
 | `autoLogToConsole` | Escribir el registro automático también en la consola | `false` |
 | `autoHumanPacing` | Ritmo humano: pausas antes/entre acciones y esperas al reclamar | `true` |
+| `autoScope` | Qué automatiza: todas las permitidas o solo las marcadas con ☆ | `all` |
 | `autoVideoPip` | Vídeo real de la Quest en recuadro flotante mientras se completa | `true` |
 | `autoVideoSound` | Empezar el vídeo con sonido (también se cambia con 🔇/🔊) | `false` |
 | `showQuestPageOverlay` | Panel flotante con progreso en la página de Misiones | `true` |

@@ -3,6 +3,19 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.0] — 2026-10-18
+
+### Añadido
+
+- **Selector Todas / Seleccionadas** (`autoScope`) en el panel: automatiza todas las Quests permitidas o
+  solo las que marques con **☆** en su tarjeta. La selección se guarda en `DataStore`.
+- Modo seleccionadas con aviso si no hay ninguna marcada; el panel muestra cuántas llevas.
+
+### Corregido
+
+- El motor ya no encadena Quests que no estén en la selección cuando se usa ese modo (las manuales con
+  **▶ Auto** siguen funcionando igual).
+
 ## [2.1.0] — 2026-10-18
 
 ### Añadido

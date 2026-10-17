@@ -19,9 +19,11 @@ import {
     claimQuestNow,
     clearAutoLog,
     getAutoSnapshot,
+    getSelectedQuestIds,
     hasAutoConsent,
     isAutoRunning,
     setAutoEnabled,
+    setQuestSelected,
     subscribeAuto
 } from "./auto/engine";
 import { warmQuestVideoWindow } from "./auto/pipVideo";
@@ -130,12 +132,14 @@ function hintFor(q: QuestInfo): string | undefined {
     }
 }
 
-function QuestCard({ q, entry, onAuto, onClaim, onCancel }: {
+function QuestCard({ q, entry, selected, onAuto, onClaim, onCancel, onToggleSelect }: {
     q: QuestInfo;
     entry?: AutoEntry;
+    selected: boolean;
     onAuto(q: QuestInfo): void;
     onClaim(q: QuestInfo): void;
     onCancel(q: QuestInfo): void;
+    onToggleSelect(q: QuestInfo): void;
 }) {
     const [imgOk, setImgOk] = useState(true);
     const pct = Math.round(q.progress * 100);
@@ -196,6 +200,16 @@ function QuestCard({ q, entry, onAuto, onClaim, onCancel }: {
                     {claimable && (
                         <Button size="small" variant="primary" onClick={() => onClaim(q)}>
                             {t("autoButtonClaim")}
+                        </Button>
+                    )}
+                    {canAuto && (
+                        <Button
+                            size="small"
+                            variant={selected ? "primary" : "secondary"}
+                            title={t(selected ? "unselectQuest" : "selectQuest")}
+                            onClick={() => onToggleSelect(q)}
+                        >
+                            {selected ? "★" : "☆"}
                         </Button>
                     )}
                     {canAuto && !busy && (
@@ -259,6 +273,22 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
     const [status, setStatus] = useState<QuestStatus | "all">("all");
     const [type, setType] = useState<TaskCategory | "all">("all");
     const [sort, setSort] = useState<SortKey>("expiry");
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(getSelectedQuestIds()));
+    const [scope, setScope] = useState<string>(settings.store.autoScope ?? "all");
+
+    function changeScope(value: string) {
+        settings.store.autoScope = value;
+        setScope(value);
+    }
+
+    function toggleSelect(q: QuestInfo) {
+        const next = new Set(selectedIds);
+        const on = !next.has(q.id);
+        setQuestSelected(q.id, on);
+        if (on) next.add(q.id);
+        else next.delete(q.id);
+        setSelectedIds(next);
+    }
 
     const hours = settings.store.expiryHours ?? 24;
     const summary = useMemo(() => ({
@@ -343,6 +373,17 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
                 </div>
             </div>
 
+            <div className="vc-qt-filters">
+                <span className="vc-qt-label">{t("scopeLabel")}</span>
+                <Chip active={scope === "all"} onClick={() => changeScope("all")}>{t("scopeAll")}</Chip>
+                <Chip active={scope === "selected"} onClick={() => changeScope("selected")}>{t("scopeSelected")}</Chip>
+                <span className="vc-qt-meta">
+                    {scope === "selected"
+                        ? `${t("selectedCount", { n: selectedIds.size })} · ${t("scopeHintSelected")}`
+                        : t("scopeHintAll")}
+                </span>
+            </div>
+
             <div className="vc-qt-summary">
                 <span><b>{quests.length}</b> Quests</span>
                 <span><b>{summary.inProgress}</b> {t("summaryInProgress")}</span>
@@ -383,9 +424,11 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
                         key={q.id}
                         q={q}
                         entry={entryById.get(q.id)}
+                        selected={selectedIds.has(q.id)}
                         onAuto={runOne}
                         onClaim={claimOne}
                         onCancel={qc => cancelAutoQuest(qc.id)}
+                        onToggleSelect={toggleSelect}
                     />
                 ))}
             </div>
@@ -395,6 +438,19 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
 
 function AutoTab({ snapshot }: { snapshot: AutoSnapshot; }) {
     const consent = hasAutoConsent();
+    const [scope, setScope] = useState<string>(settings.store.autoScope ?? "all");
+    const [selectedCount, setSelectedCount] = useState<number>(() => getSelectedQuestIds().length);
+
+    useEffect(() => {
+        setSelectedCount(getSelectedQuestIds().length);
+    }, [snapshot.entries]);
+
+    function changeScope(value: string) {
+        settings.store.autoScope = value;
+        setScope(value);
+        setSelectedCount(getSelectedQuestIds().length);
+    }
+
     const activeEntry = snapshot.activeQuestId
         ? snapshot.entries.find(e => e.questId === snapshot.activeQuestId)
         : undefined;
@@ -435,6 +491,20 @@ function AutoTab({ snapshot }: { snapshot: AutoSnapshot; }) {
                     {snapshot.running ? t("autoDisable") : t("autoEnable")}
                 </Button>
             </div>
+
+            <div className="vc-qt-filters">
+                <span className="vc-qt-label">{t("scopeLabel")}</span>
+                <Chip active={scope === "all"} onClick={() => changeScope("all")}>{t("scopeAll")}</Chip>
+                <Chip active={scope === "selected"} onClick={() => changeScope("selected")}>{t("scopeSelected")}</Chip>
+                <span className="vc-qt-meta">
+                    {scope === "selected"
+                        ? `${t("selectedCount", { n: selectedCount })} · ${t("scopeHintSelected")}`
+                        : t("scopeHintAll")}
+                </span>
+            </div>
+            {scope === "selected" && selectedCount === 0 && (
+                <div className="vc-qt-hint">{t("autoSelectNone")}</div>
+            )}
 
             {activeEntry && (
                 <div className="vc-qt-auto-section">

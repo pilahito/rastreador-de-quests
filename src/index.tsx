@@ -25,7 +25,7 @@ import { showNotification } from "@api/Notifications";
 import definePlugin from "@utils/types";
 import { showToast } from "@webpack/common";
 
-import { getAutoSnapshot, hasAutoConsent, initAuto, isAutoRunning, setAutoEnabled, shutdownAuto } from "./auto/engine";
+import { getAutoSnapshot, hasAutoConsent, initAuto, isAutoRunning, setAutoEnabled, setQuestSelected, shutdownAuto } from "./auto/engine";
 import { hideQuestVideo, showQuestVideo, warmQuestVideoWindow } from "./auto/pipVideo";
 import { openAutoConsent } from "./AutoConsent";
 import { recordHistory } from "./history";
@@ -275,7 +275,14 @@ export default definePlugin({
             auto: () => getAutoSnapshot(),
             openPanel: openQuestPanel,
             showVideo: (url: string) => showQuestVideo(url, "test"),
-            hideVideo: () => hideQuestVideo()
+            hideVideo: () => hideQuestVideo(),
+            selectQuest: (id: string, on = true) => setQuestSelected(id, on),
+            setScope: (value: string) => {
+                settings.store.autoScope = value;
+                return settings.store.autoScope;
+            },
+            startAuto: () => setAutoEnabled(true),
+            stopAuto: () => setAutoEnabled(false)
         };
     },
 

@@ -218,7 +218,16 @@ const es = {
     overlayRestore: "Restaurar tamaño",
     overlayStop: "Detener la automatización",
     overlayStart: "Activar la automatización",
-    overlayResize: "Arrastra para ensanchar"
+    overlayResize: "Arrastra para ensanchar",
+    scopeLabel: "Automatizar",
+    scopeAll: "Todas",
+    scopeSelected: "Seleccionadas",
+    scopeHintAll: "Se completan todas las Quests permitidas por los tipos activos.",
+    scopeHintSelected: "Solo se completan las Quests marcadas con ☆.",
+    selectQuest: "Marcar para el automático",
+    unselectQuest: "Quitar del automático",
+    selectedCount: "{n} marcadas",
+    autoSelectNone: "Modo seleccionadas: marca con ☆ las Quests que quieras automatizar."
 };
 
 const en: typeof es = {
@@ -425,7 +434,16 @@ const en: typeof es = {
     overlayRestore: "Restore size",
     overlayStop: "Stop automation",
     overlayStart: "Start automation",
-    overlayResize: "Drag to widen"
+    overlayResize: "Drag to widen",
+    scopeLabel: "Automate",
+    scopeAll: "All",
+    scopeSelected: "Selected",
+    scopeHintAll: "Every quest allowed by the enabled task types is completed.",
+    scopeHintSelected: "Only the quests starred with ☆ are completed.",
+    selectQuest: "Star for automation",
+    unselectQuest: "Remove from automation",
+    selectedCount: "{n} starred",
+    autoSelectNone: "Selected mode: star the quests you want automated with ☆."
 };
 
 const strings = { es, en };

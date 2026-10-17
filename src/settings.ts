@@ -158,6 +158,16 @@ export const settings = definePluginSettings({
             "antes de cada acción, deja pausas entre Quests, mantiene el juego abierto un poco más y espera antes de reclamar.",
         default: true
     },
+    autoScope: {
+        type: OptionType.SELECT,
+        description:
+            "What the automation picks: every allowed quest, or only the ones you star with ☆ in the panel. / " +
+            "Qué automatiza: todas las Quests permitidas, o solo las que marques con ☆ en el panel.",
+        options: [
+            { label: "Todas las permitidas / All allowed", value: "all", default: true },
+            { label: "Solo las marcadas con ☆ / Only starred", value: "selected" }
+        ]
+    },
     autoVideoPip: {
         type: OptionType.BOOLEAN,
         description:

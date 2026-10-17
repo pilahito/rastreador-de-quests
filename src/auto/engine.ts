@@ -22,6 +22,7 @@
  * captchas or asks for OAuth, and it stops itself if Discord reports a Quest suspension.
  */
 
+import * as DataStore from "@api/DataStore";
 import { ChannelStore, FluxDispatcher, GuildChannelStore, UserStore } from "@webpack/common";
 
 import { StringKey, t } from "../i18n";
@@ -193,6 +194,40 @@ export function isAutoRunning(): boolean {
     return running;
 }
 
+/* ------------------------------------------------------------------ */
+/* Quests seleccionadas para el modo "solo seleccionadas"              */
+/* ------------------------------------------------------------------ */
+
+const SELECTED_KEY = "QuestTracker_selectedQuests";
+const selected = new Set<string>();
+
+export function getSelectedQuestIds(): string[] {
+    return [...selected];
+}
+
+export function isQuestSelected(questId: string): boolean {
+    return selected.has(questId);
+}
+
+/** Marca/desmarca una Quest para el modo "solo seleccionadas". */
+export function setQuestSelected(questId: string, value: boolean): void {
+    if (value) selected.add(questId);
+    else selected.delete(questId);
+    void DataStore.set(SELECTED_KEY, [...selected])
+        .catch(e => logger.debug("No se pudo guardar la selección de Quests", e));
+}
+
+async function loadSelectedQuests(): Promise<void> {
+    try {
+        const list = await DataStore.get<string[]>(SELECTED_KEY);
+        if (!Array.isArray(list)) return;
+        selected.clear();
+        for (const id of list) if (id != null) selected.add(String(id));
+    } catch (e) {
+        logger.debug("No se pudo leer la selección de Quests", e);
+    }
+}
+
 /** Prepara el motor al cargar el plugin: repara ajustes y reanuda si estaba activo. */
 export function initAuto(notify: (title: string, body: string) => void): void {
     notifier = notify;
@@ -208,6 +243,7 @@ export function initAuto(notify: (title: string, body: string) => void): void {
         if (!value) stopAuto();
     });
 
+    void loadSelectedQuests();
     void repairPresenceIfNeeded();
     if (settings.store.autoEnabled) {
         if (hasAutoConsent()) startAuto();
@@ -462,7 +498,9 @@ function pickCandidate(quests: any[]): any | null {
     /* 2. Modo automático: solo si el interruptor está encendido */
     if (!settings.store.autoEnabled) return null;
 
+    const onlySelected = settings.store.autoScope === "selected";
     const eligible = quests.filter(quest => {
+        if (onlySelected && !selected.has(String(quest.id))) return false;
         if (sessionBlocked.has(String(quest.id))) return false;
         if (isQuestDone(quest)) return false;
         if (isExpired(quest)) return false;
