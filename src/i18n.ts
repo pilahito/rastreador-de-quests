@@ -182,6 +182,7 @@ const es = {
     /* Motivos por los que una Quest no se puede automatizar / unautomatable reasons */
     noTasks: "No tiene tareas que este cliente pueda hacer.",
     consoleOnly: "Solo se puede hacer en consola.",
+    mobileOnly: "Solo se puede hacer desde el móvil (app de Discord).",
     unsupported: "Tipo de tarea no soportado.",
     needsDesktop: "Necesita la app de escritorio de Discord.",
     invalidTarget: "Objetivo inválido.",
@@ -399,6 +400,7 @@ const en: typeof es = {
 
     noTasks: "It has no tasks this client can do.",
     consoleOnly: "Console only.",
+    mobileOnly: "Mobile app only (Discord's mobile app).",
     unsupported: "Unsupported task type.",
     needsDesktop: "Needs the Discord desktop app.",
     invalidTarget: "Invalid target.",

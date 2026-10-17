@@ -1,5 +1,5 @@
 /*
- * QuestTracker â€” pruebas de la lÃ³gica pura del modo automÃ¡tico.
+ * QuestTracker — pruebas de la lógica pura del modo automático.
  *
  * Se ejecutan sin Vencord ni Discord: `node --test tests/`.
  * Run without Vencord or Discord: `node --test tests/`.
@@ -55,7 +55,7 @@ test("detectTask usa el app id antiguo como respaldo", () => {
     assert.equal(detected.appId, "42");
 });
 
-test("detectTask no inventa tareas de consola ni vacÃ­as", () => {
+test("detectTask no inventa tareas de consola ni vacías", () => {
     assert.equal(detectTask(taskConfig({ PLAY_ON_XBOX: { target: 60 } }), "1"), null);
     assert.equal(detectTask({}, "1"), null);
 });
@@ -67,7 +67,7 @@ test("readProgressSeconds lee Map, objeto y el campo antiguo de stream", () => {
     assert.equal(readProgressSeconds(null, "WATCH_VIDEO"), 0);
 });
 
-test("questBlocker nombra cada motivo y deja pasar lo vÃ¡lido", () => {
+test("questBlocker nombra cada motivo y deja pasar lo válido", () => {
     const video = { type: "VIDEO", keyName: "WATCH_VIDEO", target: 60, appId: null };
     assert.equal(questBlocker({ name: "q", keys: ["WATCH_VIDEO"], detected: video, isDesktop: false }), null);
 
@@ -114,7 +114,7 @@ test("formatSeconds y sanitizeName", () => {
     assert.equal(formatSeconds(45), "45 s");
     assert.equal(formatSeconds(150), "2 min 30 s");
     assert.equal(formatSeconds(3_900), "1 h 05 min");
-    assert.equal(sanitizeName("  Apex: Legendsâ„¢ / X "), "Apex Legends X");
+    assert.equal(sanitizeName("  Apex: Legends™ / X "), "Apex Legends X");
 });
 
 test("isQuestExpired trata fechas rotas como vigentes", () => {

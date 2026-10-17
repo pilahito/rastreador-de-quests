@@ -120,8 +120,19 @@ function minutes(sec: number) {
     return Math.floor(sec / 60);
 }
 
+function platformOnly(q: QuestInfo): "mobile" | "console" | null {
+    const keys = q.tasks.map(task => task.key);
+    if (!keys.length) return null;
+    if (keys.every(key => /MOBILE$/i.test(key))) return "mobile";
+    if (keys.every(key => /XBOX|PLAYSTATION/i.test(key))) return "console";
+    return null;
+}
+
 function hintFor(q: QuestInfo): string | undefined {
     if (q.status === "completed") return t("claimableHint");
+    const only = platformOnly(q);
+    if (only === "mobile") return t("mobileOnly");
+    if (only === "console") return t("consoleOnly");
     if (q.status === "available") return t("acceptHint");
     if (q.status !== "inProgress") return undefined;
     switch (q.category) {
@@ -148,7 +159,8 @@ function QuestCard({ q, entry, selected, onAuto, onClaim, onCancel, onToggleSele
     const hint = hintFor(q);
 
     const busy = entry != null && BUSY_PHASES.includes(entry.phase);
-    const canAuto = (q.status === "inProgress" || q.status === "available") && q.category !== "other";
+    const platformRestricted = platformOnly(q) != null;
+    const canAuto = (q.status === "inProgress" || q.status === "available") && q.category !== "other" && !platformRestricted;
     const claimable = q.status === "completed";
 
     return (

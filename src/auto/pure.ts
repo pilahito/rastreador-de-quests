@@ -5,7 +5,7 @@
  */
 
 /*
- * QuestTracker â€” lÃ³gica pura del modo automÃ¡tico / pure automation logic.
+ * QuestTracker — lógica pura del modo automático / pure automation logic.
  *
  * Este archivo NO importa nada de Vencord ni de Discord: son funciones deterministas
  * que se pueden probar con `node --test tests/`. El motor (engine.ts) es quien habla
@@ -28,19 +28,24 @@ export interface DetectedTask {
     keyName: string;
     /** Segundos necesarios. */
     target: number;
-    /** Id de aplicaciÃ³n de la tarea (la usa Discord desde julio 2026). */
+    /** Id de aplicación de la tarea (la usa Discord desde julio 2026). */
     appId: string | null;
 }
 
-/** Tareas que solo existen en consola: ningÃºn cliente de escritorio puede hacerlas. */
+/** Tareas que solo existen en consola: ningún cliente de escritorio puede hacerlas. */
 export const CONSOLE_ONLY_KEYS = new Set(["PLAY_ON_XBOX", "PLAY_ON_PLAYSTATION"]);
+
+/** Tareas que solo valida la app móvil de Discord (no se pueden falsear desde el PC). */
+export function isMobileOnly(keys: string[]): boolean {
+    return keys.length > 0 && keys.every(key => /MOBILE$/i.test(key));
+}
 
 /** Tareas que se validan fuera del alcance de un mod de cliente. / Cannot be driven from the client. */
 export const UNAUTOMATABLE_KEYS: Readonly<Record<string, string>> = {
     ACHIEVEMENT_IN_GAME: "achievementInGame"
 };
 
-/** Map, array u objeto â†’ lista de entradas. */
+/** Map, array u objeto → lista de entradas. */
 export function taskEntries(tasks: unknown): Array<[string, any]> {
     if (!tasks) return [];
     if (tasks instanceof Map) return Array.from(tasks.entries()) as Array<[string, any]>;
@@ -80,9 +85,9 @@ export function readProgressSeconds(userStatus: any, key: string): number {
 }
 
 /**
- * Id de la aplicaciÃ³n de una tarea.
+ * Id de la aplicación de una tarea.
  *
- * En julio de 2026 Discord moviÃ³ el id de `config.application.id` a
+ * En julio de 2026 Discord movió el id de `config.application.id` a
  * `config.taskConfigV2.tasks.<KEY>.applications[0].id`. Leer solo la ruta nueva
  * (con la vieja como respaldo) es lo que hace que el spoof de juego siga funcionando.
  */
@@ -103,8 +108,8 @@ export function selectTaskKey(keys: string[], prefer: string[] = []): string | u
 /**
  * Familia de tarea a conducir, en orden de prioridad.
  *
- * STREAM va despuÃ©s de GAME/VIDEO porque Discord exige un Go Live real y otra persona
- * en el canal antes de leer el stream falso, asÃ­ que solo sirve como Ãºltimo recurso.
+ * STREAM va después de GAME/VIDEO porque Discord exige un Go Live real y otra persona
+ * en el canal antes de leer el stream falso, así que solo sirve como último recurso.
  */
 export function selectTaskFamily(keys: string[]): { type: TaskType; keyName: string; } | null {
     const rules: Array<{ type: TaskType; match: (key: string) => boolean; prefer?: string[]; }> = [
@@ -130,7 +135,7 @@ export function isConsoleOnly(keys: string[]): boolean {
     return keys.length > 0 && keys.every(key => CONSOLE_ONLY_KEYS.has(key));
 }
 
-/** Deduce quÃ© tarea debe conducir este cliente y con quÃ© app, o null si no puede. */
+/** Deduce qué tarea debe conducir este cliente y con qué app, o null si no puede. */
 export function detectTask(config: any, legacyAppId?: string | null): DetectedTask | null {
     const entries = taskEntries(config?.tasks);
     const keys = entries.map(([key]) => key);
@@ -169,9 +174,12 @@ export interface RunnabilityQuest {
 
 /**
  * Motivo por el que este cliente NO puede conducir una Quest (texto para el registro),
- * o null cuando sÃ­ puede. Todas las razones son permanentes durante la sesiÃ³n.
+ * o null cuando sí puede. Todas las razones son permanentes durante la sesión.
  */
 export function questBlocker(q: RunnabilityQuest): string | null {
+    // Móvil: exigiría simular el cliente móvil; el plugin no lo hace.
+    if (isMobileOnly(q.keys)) return "mobileOnly";
+
     if (!q.detected) {
         if (!q.keys.length) return "noTasks";
         if (isConsoleOnly(q.keys)) return "consoleOnly";
@@ -189,7 +197,7 @@ export function questBlocker(q: RunnabilityQuest): string | null {
     return null;
 }
 
-/** Â¿La Quest ya caducÃ³? NaN/no fecha se trata como vigente (igual que Discord). */
+/** ¿La Quest ya caducó? NaN/no fecha se trata como vigente (igual que Discord). */
 export function isQuestExpired(expiresAt: unknown, now = Date.now()): boolean {
     const end = new Date(expiresAt as any).getTime();
     return !Number.isNaN(end) && end <= now;
@@ -233,8 +241,8 @@ export function pickExecutable(executables: unknown, cleanName: string): { exeNa
 /**
  * Siguiente timestamp (segundos) para `/quests/{id}/video-progress`.
  *
- * Discord rechaza avances por delante del tiempo real transcurrido desde la inscripciÃ³n
- * (con un pequeÃ±o margen), asÃ­ que el paso nunca supera `elapsed + margen` y nunca baja
+ * Discord rechaza avances por delante del tiempo real transcurrido desde la inscripción
+ * (con un pequeño margen), así que el paso nunca supera `elapsed + margen` y nunca baja
  * del progreso actual. El resultado se limita al objetivo.
  */
 export function nextVideoTimestamp(current: number, elapsedMs: number, target: number, maxAheadSeconds: number, enrolledAt?: number): number {
@@ -255,7 +263,7 @@ export function formatSeconds(total: number): string {
     return `${rest} s`;
 }
 
-/** Pausa aleatoria dentro de un rango, para no martillear la API con un patrÃ³n fijo. */
+/** Pausa aleatoria dentro de un rango, para no martillear la API con un patrón fijo. */
 export function jitter(minMs: number, maxMs: number, random: () => number = Math.random): number {
     const min = Math.min(minMs, maxMs);
     const max = Math.max(minMs, maxMs);

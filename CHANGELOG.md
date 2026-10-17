@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.4] — 2026-10-18
+
+### Corregido
+
+- Las Quests que **solo se pueden completar en el móvil** (p. ej. `WATCH_VIDEO_ON_MOBILE`) ya no se intentan
+  automatizar: el motor las bloquea y el panel las etiqueta como “Solo se puede hacer desde el móvil”. El
+  plugin nunca simula el cliente móvil.
+- Las de **consola** muestran su etiqueta y no ofrecen el botón **Auto**.
+- Reparada la codificación de algunos textos internos (tildes, flechas y guiones) que se habían doble-codificado.
+
 ## [2.2.3] — 2026-10-18
 
 ### Rendimiento
