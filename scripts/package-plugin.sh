@@ -1,36 +1,32 @@
 #!/usr/bin/env bash
+# Crea dist/quest-tracker-vX.Y.Z.zip listo para descomprimir y ejecutar install.bat
+# Builds dist/quest-tracker-vX.Y.Z.zip ready to unzip and run install.bat
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+VERSION="${1:-dev}"
 DIST_DIR="$ROOT_DIR/dist"
-PLUGIN_DIR="$ROOT_DIR/.tmp-questtracker-package"
+STAGE="$ROOT_DIR/.tmp-package"
+PKG="$STAGE/quest-tracker"
+OUT="$DIST_DIR/quest-tracker-$VERSION.zip"
 
-rm -rf "$PLUGIN_DIR"
-mkdir -p "$DIST_DIR" "$PLUGIN_DIR/questTracker"
+rm -rf "$STAGE" "$OUT"
+mkdir -p "$DIST_DIR" "$PKG/src" "$PKG/scripts"
 
-cp "$ROOT_DIR/src/index.tsx" "$PLUGIN_DIR/questTracker/index.tsx"
-cp "$ROOT_DIR/src/quests.ts" "$PLUGIN_DIR/questTracker/quests.ts"
-cp "$ROOT_DIR/src/i18n.ts" "$PLUGIN_DIR/questTracker/i18n.ts"
-cp "$ROOT_DIR/LICENSE" "$PLUGIN_DIR/LICENSE"
-cp "$ROOT_DIR/README.md" "$PLUGIN_DIR/README.md"
+find "$ROOT_DIR/src" -maxdepth 1 -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -exec cp {} "$PKG/src/" \;
+cp "$ROOT_DIR/scripts/install-vencord-plugin.ps1" "$ROOT_DIR/scripts/install-vencord-plugin.sh" "$PKG/scripts/"
+cp "$ROOT_DIR/install.bat" "$ROOT_DIR/LICENSE" "$ROOT_DIR/README.md" "$PKG/"
 
-if command -v zip >/dev/null 2>&1; then
-  (cd "$PLUGIN_DIR" && zip -r "$DIST_DIR/quest-tracker.zip" .)
-else
-  python3 - <<'PY'
-import os, zipfile
-root = os.environ['ROOT_DIR'] + '/.tmp-questtracker-package'
-out = os.environ['ROOT_DIR'] + '/dist/quest-tracker.zip'
-os.makedirs(os.path.dirname(out), exist_ok=True)
-with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
-    for dirpath, _, filenames in os.walk(root):
-        for name in filenames:
+(cd "$STAGE" && python3 - "$OUT" <<'PY'
+import os, sys, zipfile
+out = sys.argv[1]
+with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
+    for dirpath, _, files in os.walk("quest-tracker"):
+        for name in sorted(files):
             full = os.path.join(dirpath, name)
-            rel = os.path.relpath(full, root)
-            zf.write(full, rel)
+            zf.write(full, full)
 PY
-fi
+)
 
-rm -rf "$PLUGIN_DIR"
-
-echo "Package created at: $DIST_DIR/quest-tracker.zip"
+rm -rf "$STAGE"
+echo "Package created at: $OUT"

@@ -48,16 +48,16 @@ done
 
 if [[ ! -d "$TARGET_DIR" ]]; then
   echo "Vencord directory not found: $TARGET_DIR"
-  echo "Clone it first: git clone https://github.com/Vendicated/Vencord "$TARGET_DIR"
+  echo "Clone it first: git clone https://github.com/Vendicated/Vencord \"$TARGET_DIR\""
   exit 1
 fi
 
 DEST_DIR="$TARGET_DIR/src/userplugins/$PLUGIN_DIR"
 mkdir -p "$DEST_DIR"
 
-for file in index.tsx quests.ts i18n.ts; do
-  cp "$ROOT_DIR/src/$file" "$DEST_DIR/$file"
-done
+rm -rf "$DEST_DIR"
+mkdir -p "$DEST_DIR"
+find "$ROOT_DIR/src" -maxdepth 1 -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) -exec cp {} "$DEST_DIR/" \;
 
 cat <<EOF
 QuestTracker copied to:

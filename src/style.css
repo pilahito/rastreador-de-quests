@@ -1,0 +1,221 @@
+/* QuestTracker — panel styles (Discord theme variables with fallbacks) */
+
+.vc-qt-root {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--text-default, var(--text-normal, #dbdee1));
+}
+
+.vc-qt-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.vc-qt-tabs,
+.vc-qt-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.vc-qt-label {
+    min-width: 64px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-chip {
+    padding: 4px 12px;
+    border: 1px solid var(--border-subtle, rgb(255 255 255 / 8%));
+    border-radius: 999px;
+    background: var(--background-secondary, #2b2d31);
+    color: var(--text-default, var(--text-normal, #dbdee1));
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.vc-qt-chip:hover {
+    background: var(--background-modifier-hover, rgb(255 255 255 / 6%));
+}
+
+.vc-qt-chip-active {
+    border-color: var(--brand-500, #5865f2);
+    background: var(--brand-500, #5865f2);
+    color: #fff;
+}
+
+.vc-qt-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--background-secondary, #2b2d31);
+    font-size: 14px;
+}
+
+.vc-qt-summary > button {
+    margin-left: auto;
+}
+
+.vc-qt-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 10px;
+}
+
+.vc-qt-card {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--border-subtle, rgb(255 255 255 / 8%));
+    border-left: 4px solid var(--qt-accent, var(--brand-500, #5865f2));
+    border-radius: 12px;
+    background: var(--background-secondary, #2b2d31);
+}
+
+.vc-qt-status-available { --qt-accent: #949ba4; }
+.vc-qt-status-inProgress { --qt-accent: #5865f2; }
+.vc-qt-status-completed { --qt-accent: #23a55a; }
+.vc-qt-status-claimed { --qt-accent: #f0b232; }
+
+.vc-qt-status-expired {
+    --qt-accent: #f23f43;
+
+    opacity: 0.6;
+}
+
+.vc-qt-thumb {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--background-tertiary, #1e1f22);
+    font-size: 28px;
+}
+
+.vc-qt-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vc-qt-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.vc-qt-row,
+.vc-qt-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.vc-qt-title {
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-qt-meta {
+    font-size: 12px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-badge {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--qt-accent, #5865f2);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.vc-qt-badge-available { --qt-accent: #4e5058; }
+.vc-qt-badge-inProgress { --qt-accent: #5865f2; }
+.vc-qt-badge-completed { --qt-accent: #23a55a; }
+.vc-qt-badge-claimed { --qt-accent: #b8860b; }
+.vc-qt-badge-expired { --qt-accent: #f23f43; }
+
+.vc-qt-progress {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--background-tertiary, #1e1f22);
+}
+
+.vc-qt-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--qt-accent, #5865f2), #7b8cff);
+    transition: width 0.4s ease;
+}
+
+.vc-qt-reward {
+    font-size: 13px;
+}
+
+.vc-qt-hint {
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: var(--background-tertiary, #1e1f22);
+    font-size: 12px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-hint-claim {
+    background: rgb(35 165 90 / 15%);
+    color: #23a55a;
+    font-weight: 600;
+}
+
+.vc-qt-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.vc-qt-soon {
+    color: #f0b232;
+    font-weight: 600;
+}
+
+.vc-qt-claim {
+    color: #23a55a;
+    font-weight: 600;
+}
+
+.vc-qt-empty {
+    padding: 24px;
+    border-radius: 12px;
+    background: var(--background-secondary, #2b2d31);
+    text-align: center;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-qt-footer {
+    font-size: 12px;
+    text-align: center;
+    color: var(--text-muted, #949ba4);
+}

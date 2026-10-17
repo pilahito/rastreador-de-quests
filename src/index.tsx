@@ -1,199 +1,243 @@
 /*
- * QuestTracker by pilahito
- * QuestTracker — read-only Quest tracker / Rastreador de Quests (solo lectura)
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 pilahito
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings } from "@api/Settings";
-import { DataStore } from "@api/index";
-import definePlugin, { OptionType } from "@utils/types";
-import { findByPropsLazy } from "@webpack";
-import { FluxDispatcher, UserStore } from "@webpack/common";
-import { Logger } from "@utils/Logger";
-
-import { t, type Lang } from "./i18n";
-import { Quest, QuestKind, readQuests } from "./quests";
-
-/** Notas / Notes:
- *  - This plugin ONLY reads the quest list that the client already received.
- *    It never talks to Discord's API, never patches any tracking module and
- *    never reports progress. / Este plugin SOLO lee la lista de quests que el
- *    cliente ya recibió. Nunca llama a la API de Discord, nunca parchea ningún
- *    módulo de seguimiento y nunca reporta progreso.
+/*
+ * QuestTracker — rastreador de Quests de SOLO LECTURA / READ-ONLY Quest tracker.
+ *
+ * Este plugin solo lee las Quests que el cliente ya tiene en memoria y te avisa.
+ * Nunca llama a la API de Discord, nunca envía progreso ni heartbeats, nunca
+ * acepta ni reclama nada, nunca parchea telemetría. Tú haces las Quests de verdad.
+ *
+ * This plugin only reads the quests the client already holds and notifies you.
+ * It never calls Discord's API, never sends progress or heartbeats, never
+ * accepts or claims anything and never patches telemetry. You do quests for real.
  */
 
-const QuestsStore = findByPropsLazy("getQuests", "getQuest");
+import "./style.css";
 
-const logger = new Logger("QuestTracker");
+import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
+import { ApplicationCommandInputType } from "@api/Commands";
+import * as DataStore from "@api/DataStore";
+import { showNotification } from "@api/Notifications";
+import definePlugin from "@utils/types";
 
-const SEEN_KEY = "QuestTracker_seenQuestIds";
+import { recordHistory } from "./history";
+import { setLang, t } from "./i18n";
+import { openQuestPanel, readCurrentQuests } from "./QuestPanel";
+import { isExpiringSoon, QuestInfo } from "./quests";
+import { settings } from "./settings";
+import { getQuestStore, logger, QUEST_EVENTS, subscribeStore } from "./store";
 
-const settings = definePluginSettings({
-    lang: {
-        type: OptionType.SELECT,
-        description: "Language / Idioma",
-        options: [
-            { label: "Español", value: "es", default: true },
-            { label: "English", value: "en" }
-        ]
-    },
-    notifyNew: {
-        type: OptionType.BOOLEAN,
-        description: "Notify when a new quest appears / Avisar cuando aparece una quest nueva",
-        default: true
-    },
-    notifyExpiring: {
-        type: OptionType.BOOLEAN,
-        description: "Notify about quests about to expire / Avisar de quests a punto de expirar",
-        default: true
-    },
-    expiryHours: {
-        type: OptionType.NUMBER,
-        description: "Hours before expiry to warn / Horas antes de expirar para avisar",
-        default: 6,
-        disabled: () => !settings.store.notifyExpiring
-    },
-    logToConsole: {
-        type: OptionType.BOOLEAN,
-        description: "Log the quest list to the console / Volcar la lista de quests en la consola",
-        default: false
-    }
-});
+const LEGACY_SEEN_KEY = "QuestTracker_seenQuestIds";
+const STATE_KEY = "QuestTracker_state_v2";
 
-let onChange: (() => void) | undefined;
+type NotifyKind = "expiring" | "near" | "claim";
 
-function readConnectedAccountIds(): string[] {
-    const ids: string[] = [];
-    const accounts = (UserStore as any)?.getCurrentUser?.()?.connectedAccounts;
-    if (Array.isArray(accounts)) {
-        for (const acc of accounts) {
-            const id = acc?.id ?? acc?.external_id;
-            if (typeof id === "string") ids.push(id);
-        }
-    }
-    return ids;
+interface TrackerState {
+    seen: string[];
+    notified: Record<string, NotifyKind[]>;
 }
 
-function extractQuests(): Quest[] {
-    try {
-        return readQuests(QuestsStore, readConnectedAccountIds());
-    } catch (error) {
-        logger.error("Failed to read quests / No se pudieron leer las quests", error);
-        return [];
-    }
+function QuestIcon({ height = 20, width = 20, className }: { height?: number | string; width?: number | string; className?: string; }) {
+    return (
+        <svg viewBox="0 0 24 24" height={height} width={width} className={className} aria-hidden="true">
+            <path
+                fill="currentColor"
+                d="M7 3h10v2h3a1 1 0 0 1 1 1v2a5 5 0 0 1-4.1 4.92A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1a5 5 0 0 1-3.9-2.98A5 5 0 0 1 3 8V6a1 1 0 0 1 1-1h3V3Zm0 4H5v1a3 3 0 0 0 2 2.83V7Zm10 0v3.83A3 3 0 0 0 19 8V7h-2Z"
+            />
+        </svg>
+    );
 }
 
-/** Snapshot only — never writes back into the store. / Solo lectura. */
-function snapshot(): Quest[] {
-    const quests = extractQuests();
-    if (!settings.store.logToConsole) return quests;
+const QuestChatButton: ChatBarButtonFactory = ({ isMainChat }) => {
+    if (!isMainChat || !settings.store.showChatButton) return null;
+    return (
+        <ChatBarButton tooltip={t("openPanel")} onClick={() => openQuestPanel()}>
+            <QuestIcon />
+        </ChatBarButton>
+    );
+};
 
+async function loadState(): Promise<TrackerState> {
+    const state = await DataStore.get<TrackerState>(STATE_KEY);
+    if (state?.seen) return { seen: state.seen, notified: state.notified ?? {} };
+
+    // Migrate v1.0 data / migrar datos de la v1.0
+    const legacy = await DataStore.get<string[]>(LEGACY_SEEN_KEY);
+    return { seen: Array.isArray(legacy) ? legacy : [], notified: {} };
+}
+
+function notify(title: string, body: string) {
+    void showNotification({
+        title: `QuestTracker · ${title}`,
+        body,
+        onClick: () => openQuestPanel()
+    });
+}
+
+function logQuests(quests: QuestInfo[]) {
     logger.info(`Found / Encontradas: ${quests.length} quest(s)`);
     for (const q of quests) {
-        logger.info(
-            `- ${q.name} [${q.kind}] expires/expira ${q.expiresAt?.toLocaleString() ?? "?"} ` +
-            `(${q.expiringSoon ? "SOON / PRONTO" : "ok"})`
-        );
-    }
-    return quests;
-}
-
-/** Toast + optional desktop notification. / Toast + notificación de escritorio. */
-function notify(title: string, body: string, notifyDesktop = true) {
-    try {
-        const mod = findByPropsLazy("showToast");
-        mod?.showToast?.(body, {});
-    } catch {
-        logger.info(`${title} — ${body}`);
-    }
-
-    if (!notifyDesktop) return;
-    if (typeof Notification === "undefined") return;
-    if (Notification.permission === "granted") {
-        new Notification(title, { body, silent: false });
-    } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(p => {
-            if (p === "granted") new Notification(title, { body });
-        });
+        logger.info(`- ${q.name} [${q.category}/${q.status}] ${Math.round(q.progress * 100)}% · ${q.reward} · expires ${q.expiresAt ? new Date(q.expiresAt).toISOString() : "?"}`);
     }
 }
+
+let checking = false;
+let pending = false;
 
 async function checkForChanges() {
-    const quests = snapshot();
-    if (!quests.length) return;
-
-    const lang = settings.store.lang as Lang;
-    const seen = new Set<string>((await DataStore.get(SEEN_KEY)) ?? []);
-
-    /** First run: record everything silently. / Primera ejecución: registrar sin avisar. */
-    if (seen.size === 0) {
-        await DataStore.set(SEEN_KEY, quests.map(q => q.id));
-        logger.info(t(lang, "firstRun") + ` (${quests.length})`);
+    if (checking) {
+        pending = true;
         return;
     }
+    checking = true;
+    try {
+        setLang(settings.store.lang);
+        const { quests } = readCurrentQuests();
+        if (!quests.length) return;
+        if (settings.store.logToConsole) logQuests(quests);
 
-    const fresh = quests.filter(q => !seen.has(q.id));
-    if (fresh.length && settings.store.notifyNew) {
-        for (const q of fresh) {
-            notify(t(lang, "newQuest"), `${q.name} — ${t(lang, "reward")}: ${q.reward}`);
+        await recordHistory(quests);
+
+        const state = await loadState();
+        const s = settings.store;
+        const firstRun = state.seen.length === 0;
+        const seen = new Set(state.seen);
+
+        const mark = (id: string, kind: NotifyKind) => {
+            const list = state.notified[id] ?? (state.notified[id] = []);
+            if (list.includes(kind)) return false;
+            list.push(kind);
+            return true;
+        };
+
+        for (const q of quests) {
+            const isNew = !seen.has(q.id);
+            seen.add(q.id);
+
+            if (firstRun) {
+                // Remember what was already true so we don't spam on first run
+                if (q.status === "completed") mark(q.id, "claim");
+                continue;
+            }
+
+            if (isNew && s.notifyNew && (q.status === "available" || q.status === "inProgress")) {
+                notify(t("notifNewTitle"), `${q.name} — ${t("reward")}: ${q.reward}`);
+            }
+
+            if (s.notifyExpiring && q.status !== "claimed" && isExpiringSoon(q, s.expiryHours ?? 24) && mark(q.id, "expiring")) {
+                notify(t("notifExpiringTitle"), `${q.name} — ${t("timeLeft")}: ${new Date(q.expiresAt!).toLocaleString()}`);
+            }
+
+            if (s.notifyNearComplete && q.status === "inProgress" && q.progress * 100 >= (s.nearCompletePercent ?? 80) && mark(q.id, "near")) {
+                notify(t("notifNearTitle"), `${q.name}: ${t("notifNearBody", { p: Math.round(q.progress * 100) })}`);
+            }
+
+            if (s.notifyClaimable && q.status === "completed" && mark(q.id, "claim")) {
+                notify(t("notifClaimTitle"), `${q.name} — ${q.reward}. ${t("notifClaimBody")}`);
+            }
         }
-    }
 
-    if (settings.store.notifyExpiring) {
-        const soon = quests.filter(q => q.expiringSoon && !fresh.includes(q));
-        for (const q of soon) {
-            notify(t(lang, "expiringSoon"), `${q.name} — ${q.expiresAt?.toLocaleString() ?? ""}`);
+        // Forget flags of quests that no longer exist / olvidar flags de quests que ya no existen
+        const current = new Set(quests.map(q => q.id));
+        for (const id of Object.keys(state.notified)) if (!current.has(id)) delete state.notified[id];
+
+        if (firstRun) logger.info(`${t("firstRun")} (${quests.length})`);
+        await DataStore.set(STATE_KEY, { seen: [...seen].slice(-1000), notified: state.notified } satisfies TrackerState);
+    } catch (e) {
+        logger.error("Quest check failed / Falló la comprobación de Quests", e);
+    } finally {
+        checking = false;
+        if (pending) {
+            pending = false;
+            scheduleCheck();
         }
-    }
-
-    if (fresh.length) {
-        await DataStore.set(SEEN_KEY, [...seen, ...fresh.map(q => q.id)]);
     }
 }
 
-function getQuestKind(q: Quest): QuestKind {
-    return q.kind;
+let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+function scheduleCheck() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => void checkForChanges(), 1500);
+}
+
+let unsubscribeStore: (() => void) | undefined;
+let retryTimer: ReturnType<typeof setTimeout> | undefined;
+let intervalTimer: ReturnType<typeof setInterval> | undefined;
+
+function attachToStore(attempt = 0) {
+    if (getQuestStore(attempt > 0)) {
+        unsubscribeStore = subscribeStore(scheduleCheck);
+        scheduleCheck();
+        return;
+    }
+    if (attempt === 6) {
+        logger.warn(
+            "Quest store not found yet. Open Discover → Quests once. / " +
+            "Todavía no encuentro el store de Quests. Abre Descubrir → Quests una vez."
+        );
+    }
+    // Keep retrying slowly / seguir reintentando despacio
+    retryTimer = setTimeout(() => attachToStore(attempt + 1), attempt < 6 ? 5000 : 60_000);
 }
 
 export default definePlugin({
     name: "QuestTracker",
     description:
-        "Read-only Discord quest tracker: detects new quests and warns before they expire. " +
-        "Rastreador de quests de solo lectura: detecta quests nuevas y avisa antes de que expiren.",
+        "Read-only Discord Quest tracker: panel with progress, notifications and local history. Never automates anything. / " +
+        "Rastreador de Quests de solo lectura: panel con progreso, avisos e historial local. Nunca automatiza nada.",
     authors: [{ name: "pilahito", id: 0n }],
+    tags: ["Utility", "Notifications", "Commands"],
+    dependencies: ["CommandsAPI", "ChatInputButtonAPI"],
 
     settings,
 
-    /** Fast method used by the future panel. / Método rápido para el panel futuro. */
-    getQuests: snapshot,
-    getQuestKind,
+    chatBarButton: {
+        icon: QuestIcon,
+        render: QuestChatButton
+    },
+
+    toolboxActions: {
+        "QuestTracker: Quests": () => {
+            setLang(settings.store.lang);
+            openQuestPanel();
+        }
+    },
+
+    commands: [
+        {
+            name: "quests",
+            description: "Open the QuestTracker panel (read-only) / Abre el panel de QuestTracker",
+            inputType: ApplicationCommandInputType.BUILT_IN,
+            execute() {
+                setLang(settings.store.lang);
+                openQuestPanel();
+            }
+        }
+    ],
+
+    // We only LISTEN to these events / solo ESCUCHAMOS estos eventos
+    flux: Object.fromEntries(QUEST_EVENTS.map(ev => [ev, () => scheduleCheck()])),
+
+    /** Public read-only helper for other plugins / devtools. */
+    getQuests: () => readCurrentQuests().quests,
+    openPanel: openQuestPanel,
 
     start() {
-        /** Give the store a moment to exist, then subscribe. / Espera a que el store exista. */
-        setTimeout(() => {
-            if (!QuestsStore) {
-                logger.warn(
-                    "QuestsStore not found. Open the Quests tab once and reload. / " +
-                    "No se encontró QuestsStore. Abre la pestaña Quests una vez y recarga."
-                );
-                return;
-            }
-
-            onChange = () => void checkForChanges();
-            FluxDispatcher.subscribe("QUESTS_FETCH_CURRENT_QUESTS_SUCCESS", onChange);
-            FluxDispatcher.subscribe("QUESTS_FETCH_CURRENT_QUESTS_FAILURE", onChange);
-            FluxDispatcher.subscribe("QUESTS_UPDATE_QUEST", onChange);
-
-            void checkForChanges();
-        }, 5000);
+        setLang(settings.store.lang);
+        retryTimer = setTimeout(() => attachToStore(0), 3000);
+        // Periodic re-check for time-based warnings / comprobación periódica de caducidad
+        intervalTimer = setInterval(scheduleCheck, 5 * 60_000);
     },
 
     stop() {
-        if (onChange) {
-            FluxDispatcher.unsubscribe("QUESTS_FETCH_CURRENT_QUESTS_SUCCESS", onChange);
-            FluxDispatcher.unsubscribe("QUESTS_FETCH_CURRENT_QUESTS_FAILURE", onChange);
-            FluxDispatcher.unsubscribe("QUESTS_UPDATE_QUEST", onChange);
-        }
-        onChange = undefined;
+        clearTimeout(retryTimer);
+        clearTimeout(debounceTimer);
+        clearInterval(intervalTimer);
+        unsubscribeStore?.();
+        unsubscribeStore = undefined;
     }
 });
