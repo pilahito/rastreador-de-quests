@@ -169,7 +169,13 @@ async function checkForChanges() {
         for (const id of Object.keys(state.notified)) if (!current.has(id)) delete state.notified[id];
 
         if (firstRun) logger.info(`${t("firstRun")} (${quests.length})`);
-        await DataStore.set(STATE_KEY, { seen: [...seen].slice(-1000), notified: state.notified } satisfies TrackerState);
+        // Solo se escribe si algo cambió de verdad (evita escrituras en IndexedDB cada minuto).
+        const nextState: TrackerState = { seen: [...seen].slice(-1000), notified: state.notified };
+        const serialized = JSON.stringify(nextState);
+        if (serialized !== lastSavedState) {
+            await DataStore.set(STATE_KEY, nextState);
+            lastSavedState = serialized;
+        }
     } catch (e) {
         logger.error("Quest check failed / Falló la comprobación de Quests", e);
     } finally {
@@ -190,6 +196,7 @@ function scheduleCheck() {
 let unsubscribeStore: (() => void) | undefined;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
 let intervalTimer: ReturnType<typeof setInterval> | undefined;
+let lastSavedState = "";
 
 function attachToStore(attempt = 0) {
     if (getQuestStore(attempt > 0)) {

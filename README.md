@@ -250,6 +250,12 @@ plugin no hace a propósito.
 **¿Envía mis datos a algún sitio?**
 No. El historial y los ajustes se quedan en tu `DataStore` local. Las únicas peticiones van a Discord.
 
+**¿Consume muchos recursos?**
+El rastreador no sondea nada: reacciona a los eventos del store de Quests. El panel flotante solo existe en
+`/quest-home`, se refresca cada 5 s, **no hace nada con la ventana minimizada** y no fuerza reflows de la
+página (no lee `innerText`). Lo único que consume de verdad es el **vídeo flotante mientras se reproduce**
+(puedes desactivarlo con `autoVideoPip`).
+
 **¿Cómo vuelvo al modo "solo lectura"?**
 Desactiva `autoEnabled` (y `autoConsent` si quieres que no se pueda reactivar sin volver a aceptar).
 El rastreador sigue funcionando.

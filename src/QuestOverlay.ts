@@ -55,7 +55,10 @@ const STATUS_ORDER: Record<QuestStatus, number> = {
 let container: HTMLDivElement | null = null;
 let routerTimer: ReturnType<typeof setInterval> | undefined;
 let refreshTimer: ReturnType<typeof setInterval> | undefined;
+let refreshDebounce: ReturnType<typeof setTimeout> | undefined;
 let unsubscribe: (() => void) | undefined;
+let resizeBound = false;
+let visibilityBound = false;
 let lastSignature = "";
 let mode: OverlayMode = "normal";
 
@@ -67,14 +70,15 @@ function setMode(next: OverlayMode): void {
     refresh();
 }
 
-/** ¿Estamos en la página de Misiones de Discord? */
+/**
+ * ¿Estamos en la página de Misiones de Discord?
+ * Solo mira la ruta: leer `document.body.innerText` cada segundo obliga a Discord a
+ * recalcular el layout de toda la página y era el mayor coste del panel.
+ */
 function isQuestPage(): boolean {
     try {
-        if (location.pathname.startsWith("/quest-home")) return true;
-        if (location.pathname.startsWith("/quests")) return true;
-        // Respaldo por texto (por si Discord cambia la ruta)
-        const text = document.body?.innerText ?? "";
-        return /Todas las misiones|Misiones obtenidas|All missions|Earned missions|Toutes les missions/i.test(text);
+        const path = location.pathname;
+        return path.startsWith("/quest-home") || path.startsWith("/quests");
     } catch {
         return false;
     }
@@ -339,15 +343,28 @@ function attachDrag(host: HTMLElement): void {
         void DataStore.del(POS_KEY).catch(() => { });
     });
 
-    window.addEventListener("resize", () => applyPos());
+    // Un único listener de resize en toda la sesión (antes se acumulaba uno por montaje).
+    if (!resizeBound) {
+        resizeBound = true;
+        window.addEventListener("resize", () => applyPos());
+    }
 }
-
 function render(quests: QuestInfo[]): void {
     if (!container) return;
 
     const width = currentWidth();
-    const signature = JSON.stringify([mode, width, quests.map(q => [q.id, Math.round(q.progress * 1000), q.status, q.expiresAt])])
-        + autoLine();
+    // Hash barato en vez de JSON.stringify de todas las Quests.
+    let hash = 2166136261;
+    hash = Math.imul(hash ^ mode.length, 16777619);
+    hash = Math.imul(hash ^ width, 16777619);
+    for (const q of quests) {
+        hash = Math.imul(hash ^ Math.round(q.progress * 1000), 16777619);
+        hash = Math.imul(hash ^ STATUS_ORDER[q.status], 16777619);
+        if (q.expiresAt) hash = Math.imul(hash ^ q.expiresAt, 16777619);
+    }
+    const auto = autoLine();
+    for (let i = 0; i < auto.length; i++) hash = Math.imul(hash ^ auto.charCodeAt(i), 16777619);
+    const signature = `${quests.length}:${hash}`;
     if (signature === lastSignature) return;
     lastSignature = signature;
 
@@ -377,6 +394,19 @@ function refresh(): void {
     }
 }
 
+/** Refresco agrupado: varios eventos del store seguidos no repintan varias veces. */
+function scheduleRefresh(delay = 350): void {
+    if (refreshDebounce) return;
+    refreshDebounce = setTimeout(() => {
+        refreshDebounce = undefined;
+        if (!document.hidden) refresh();
+    }, delay);
+}
+
+function onVisibilityChange(): void {
+    if (!document.hidden) refresh();
+}
+
 function mount(): void {
     if (container) return;
     container = el("div");
@@ -387,13 +417,27 @@ function mount(): void {
     loadPos();
     lastSignature = "";
     refresh();
-    refreshTimer = setInterval(refresh, 2000);
-    unsubscribe = subscribeStore(refresh);
+    // Refresco de respaldo cada 5 s: los cambios reales llegan por el store (agrupados) y
+    // nada de trabajo con la ventana minimizada. El store y los avisos siguen al día.
+    refreshTimer = setInterval(() => {
+        if (!document.hidden) refresh();
+    }, 5000);
+    if (!visibilityBound) {
+        visibilityBound = true;
+        document.addEventListener("visibilitychange", onVisibilityChange);
+    }
+    unsubscribe = subscribeStore(() => scheduleRefresh());
 }
 
 function unmount(): void {
     if (refreshTimer) clearInterval(refreshTimer);
     refreshTimer = undefined;
+    if (refreshDebounce) clearTimeout(refreshDebounce);
+    refreshDebounce = undefined;
+    if (visibilityBound) {
+        visibilityBound = false;
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+    }
     unsubscribe?.();
     unsubscribe = undefined;
     container?.remove();
@@ -409,7 +453,7 @@ export function startQuestPageOverlay(): void {
         if (active) mount();
         else if (container) unmount();
     };
-    routerTimer = setInterval(sync, 800);
+    routerTimer = setInterval(sync, 1000);
     setTimeout(sync, 1500);
 }
 

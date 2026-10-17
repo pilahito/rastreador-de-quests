@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.3] — 2026-10-18
+
+### Rendimiento
+
+- El panel flotante **ya no lee `document.body.innerText`** en cada comprobación de ruta: eso obligaba a
+  Discord a recalcular el layout de toda la página cada 800 ms y era el mayor coste del plugin.
+- El panel se refresca **cada 5 s** (antes 2 s), **no hace nada con la ventana minimizada** y agrupa los
+  eventos del store con un pequeño debounce.
+- El repintado usa un **hash barato** en vez de `JSON.stringify` de todas las Quests.
+- Un solo listener de `resize` (antes se acumulaba uno por cada visita a Misiones).
+- La persistencia de avisos solo escribe en `DataStore` **cuando algo cambia** de verdad.
+
 ## [2.2.2] — 2026-10-18
 
 ### Cambiado
