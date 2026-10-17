@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.1] — 2026-10-18
+
+### Corregido
+
+- El panel flotante se adapta a su ancho: al estrecharlo, las filas pasan a un diseño de dos líneas
+  (nombre / % y estado / recompensa y tiempo) en vez de recortarse. Ancho mínimo 300 px.
+- El asa de la esquina para ensanchar/estrechar es más visible y el panel se vuelve a componer al cambiar
+  de ancho.
+
 ## [2.2.0] — 2026-10-18
 
 ### Añadido

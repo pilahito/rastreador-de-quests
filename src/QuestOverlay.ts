@@ -211,14 +211,14 @@ let savedPos: { left: number; top: number; } | null = null;
 let customWidth: number | null = null;
 let posRequested = false;
 
-const MIN_WIDTH = 260;
+const MIN_WIDTH = 300;
 
 function clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max);
 }
 
 function defaultWidth(): number {
-    return mode === "wide" ? 470 : mode === "mini" ? 260 : 330;
+    return mode === "wide" ? 470 : mode === "mini" ? 280 : 330;
 }
 
 function currentWidth(): number {
@@ -243,6 +243,9 @@ function setWidth(width: number): void {
     customWidth = clamp(Math.round(width), MIN_WIDTH, Math.max(MIN_WIDTH, window.innerWidth - 40));
     container.style.width = `${customWidth}px`;
     applyPos();
+    // El ancho cambia el diseño interno (modo estrecho): re-renderizar.
+    lastSignature = "";
+    refresh();
 }
 
 function loadPos(): void {
@@ -342,15 +345,17 @@ function attachDrag(host: HTMLElement): void {
 function render(quests: QuestInfo[]): void {
     if (!container) return;
 
-    const signature = JSON.stringify([mode, quests.map(q => [q.id, Math.round(q.progress * 1000), q.status, q.expiresAt])])
+    const width = currentWidth();
+    const signature = JSON.stringify([mode, width, quests.map(q => [q.id, Math.round(q.progress * 1000), q.status, q.expiresAt])])
         + autoLine();
     if (signature === lastSignature) return;
     lastSignature = signature;
 
-    container.style.width = `${currentWidth()}px`;
+    container.style.width = `${width}px`;
     if (savedPos) applyPos();
 
     const root = el("div", "vc-qt-overlay vc-qt-overlay-mode-" + mode);
+    root.classList.toggle("vc-qt-overlay-narrow", width < 320);
     root.append(buildHeader(quests));
 
     if (mode !== "mini") {
