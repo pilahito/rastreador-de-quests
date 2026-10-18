@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.5] — 2026-10-18
+
+### Corregido
+
+- El recuadro flotante del vídeo ya **no se queda abierto con el texto “Aquí saldrá el vídeo de la Quest”**:
+  empieza oculto y solo aparece cuando hay un vídeo reproduciéndose; al terminar la Quest de vídeo se vuelve
+  a ocultar. Antes parecía que se había quedado congelado.
+- El progreso real se sigue actualizando por latidos (≈1 % cada 9 s en Quests de juego).
+
 ## [2.2.4] — 2026-10-18
 
 ### Corregido

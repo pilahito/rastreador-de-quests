@@ -108,6 +108,8 @@ function ensureBox(): boolean {
         bar.append(muteBtn, popBtn, closeBtn);
 
         container.append(player, placeholder, bar);
+        // Arranca oculto: solo aparece cuando hay un vídeo real reproduciéndose.
+        container.style.display = "none";
         document.body.appendChild(container);
         box = container;
         video = player;
@@ -184,7 +186,7 @@ export async function showQuestVideo(url: string | undefined, title: string): Pr
     }
 }
 
-/** Deja de reproducir (el recuadro queda listo para la siguiente Quest). */
+/** Deja de reproducir y oculta el recuadro (queda listo para la siguiente Quest). */
 export function hideQuestVideo(): void {
     current = null;
     clearTimeout(pauseGuard);
@@ -199,6 +201,7 @@ export function hideQuestVideo(): void {
         video.style.display = "none";
     } catch { /* silencio */ }
     if (idle) idle.style.display = "flex";
+    if (box) box.style.display = "none";
 }
 
 /** Cierra el recuadro flotante (al descargar el plugin). */
