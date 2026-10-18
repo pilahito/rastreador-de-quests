@@ -903,3 +903,11 @@
 .vc-qt-overlay-grip:hover {
     opacity: 1;
 }
+
+/* Etiqueta especial para Quests que solo se completan en el móvil */
+
+.vc-qt-overlay-status-mobile {
+    background: rgba(250, 166, 26, 0.18);
+    color: #faa61a;
+    border-color: rgba(250, 166, 26, 0.4);
+}

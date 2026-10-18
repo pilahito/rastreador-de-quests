@@ -176,6 +176,7 @@ function buildHeader(quests: QuestInfo[]): HTMLElement {
 
 function buildRow(quest: QuestInfo): HTMLElement {
     const pct = Math.round(quest.progress * 100);
+    const mobileOnly = quest.tasks.length > 0 && quest.tasks.every(task => /MOBILE$/i.test(task.key));
     const row = el("div", "vc-qt-overlay-row vc-qt-overlay-row-" + quest.status);
     row.title = `${quest.name} · ${quest.reward} · ${pct}%`;
     row.addEventListener("click", () => openQuestPanel());
@@ -183,7 +184,9 @@ function buildRow(quest: QuestInfo): HTMLElement {
     const top = el("div", "vc-qt-overlay-top");
     const name = el("div", "vc-qt-overlay-name", quest.name);
     const pctEl = el("span", "vc-qt-overlay-pct", `${pct}%`);
-    const status = el("span", "vc-qt-overlay-status vc-qt-overlay-status-" + quest.status, t(STATUS_KEYS[quest.status]));
+    const status = el("span", "vc-qt-overlay-status vc-qt-overlay-status-" + (mobileOnly ? "mobile" : quest.status),
+        t(mobileOnly ? "overlayMobile" : STATUS_KEYS[quest.status]));
+    if (mobileOnly) status.title = t("mobileOnly");
     top.append(name, pctEl, status);
 
     const bar = el("div", "vc-qt-overlay-bar");
@@ -193,11 +196,13 @@ function buildRow(quest: QuestInfo): HTMLElement {
 
     const meta = el("div", "vc-qt-overlay-meta");
     const reward = el("span", undefined, `🎁 ${quest.reward}`);
-    const right = el("span", undefined, quest.status === "completed" || quest.status === "claimed"
-        ? t("overlayClaimable")
-        : quest.expiresAt
-            ? `${t("timeLeft")}: ${formatDuration(quest.expiresAt - Date.now())}`
-            : "");
+    const right = el("span", undefined, mobileOnly
+        ? t("overlayMobileHint")
+        : quest.status === "completed" || quest.status === "claimed"
+            ? t("overlayClaimable")
+            : quest.expiresAt
+                ? `${t("timeLeft")}: ${formatDuration(quest.expiresAt - Date.now())}`
+                : "");
     if (quest.expiresAt && isExpiringSoon(quest, settings.store.expiryHours ?? 24)) {
         right.classList.add("vc-qt-overlay-soon");
     }
