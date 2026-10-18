@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.3.0] — 2026-10-18
+
+### Añadido
+
+- **Ritmo rápido** (`autoFastPacing`, apagado por defecto): mantiene las pausas del ritmo humano pero las
+  acorta al ~40 %. Afecta a la espera inicial, el hueco entre Quests, el intervalo del vídeo, la espera antes
+  de reclamar y el tiempo extra que se deja el juego abierto. Termina las Quests bastante antes.
+
 ## [2.2.9] — 2026-10-18
 
 ### Añadido

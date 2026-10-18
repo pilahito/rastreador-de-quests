@@ -158,6 +158,15 @@ export const settings = definePluginSettings({
             "antes de cada acción, deja pausas entre Quests, mantiene el juego abierto un poco más y espera antes de reclamar.",
         default: true
     },
+    autoFastPacing: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Fast pacing: keeps the pauses but shortens them to ~40 % (start delay, gap between quests, video interval, " +
+            "claim wait and extra game time). Finishes quests sooner. / Ritmo rápido: mantiene las pausas pero las acorta " +
+            "al ~40 % (espera inicial, hueco entre Quests, intervalo del vídeo, espera al reclamar y tiempo extra del " +
+            "juego). Termina antes las Quests.",
+        default: false
+    },
     autoRetry: {
         type: OptionType.BOOLEAN,
         description:

@@ -281,7 +281,7 @@ export function startAuto(): boolean {
     addLog("info", t("autoStarted"));
     startTimer();
     // Un humano no arranca en el mismo instante en que pulsa: pequeño margen.
-    const startDelay = humanOn() ? jitter(3000, 12000) : 0;
+    const startDelay = humanOn() ? pace(3000, 12000) : 0;
     setTimeout(() => {
         if (running) void tick();
     }, startDelay);
@@ -344,17 +344,30 @@ function humanOn(): boolean {
     return settings.store.autoHumanPacing !== false;
 }
 
+/** Ritmo rápido: mismas pausas, pero más cortas (ajuste `autoFastPacing`). */
+function fastPacing(): boolean {
+    return settings.store.autoFastPacing === true;
+}
+
+/** Jitter con escala: si el ritmo rápido está activo, acorta la espera al 40 %. */
+function pace(minMs: number, maxMs: number): number {
+    if (!fastPacing()) return jitter(minMs, maxMs);
+    const min = Math.max(300, Math.round(minMs * 0.4));
+    const max = Math.max(min + 200, Math.round(maxMs * 0.4));
+    return jitter(min, max);
+}
+
 /** Pausa "de pensar" antes de actuar; devuelve false si se detuvo el motor. */
 async function think(gen: number, minMs: number, maxMs: number): Promise<boolean> {
     if (!humanOn()) return alive(gen);
-    await sleep(jitter(minMs, maxMs));
+    await sleep(pace(minMs, maxMs));
     return alive(gen);
 }
 
 /** Mantiene una tarea "abierta" un rato más, comprobando que sigue activa. */
 async function keepAliveFor(gen: number, minMs: number, maxMs: number): Promise<void> {
     if (!humanOn()) return;
-    let left = jitter(minMs, maxMs);
+    let left = pace(minMs, maxMs);
     while (left > 0 && alive(gen)) {
         const step = Math.min(left, 5000);
         await sleep(step);
@@ -364,7 +377,7 @@ async function keepAliveFor(gen: number, minMs: number, maxMs: number): Promise<
 
 /** Pausa entre Quests: un humano no encadena una detrás de otra al instante. */
 function questGapMs(): number {
-    return humanOn() ? jitter(20_000, 80_000) : 1500;
+    return humanOn() ? pace(20_000, 80_000) : 1500;
 }
 
 /* ------------------------------------------------------------------ */
@@ -659,7 +672,7 @@ async function runVideo(quest: any, id: string, name: string, detected: Detected
     try {
         while (alive(gen) && current < target) {
             const interval = humanOn()
-                ? jitter(9_000, 14_000)
+                ? pace(9_000, 14_000)
                 : jitter(VIDEO_INTERVAL_MIN, VIDEO_INTERVAL_MAX);
             await sleep(interval);
             if (!alive(gen)) return { ok: false, error: t("autoStopped") };
