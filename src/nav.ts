@@ -38,6 +38,42 @@ export function openQuestsInDiscord(route = "/quest-home") {
     showToast({ text: "Discord → Quests" });
 }
 
+const MOBILE_BUTTON_RE = /ver en el m[oó]vil|view on mobile|voir sur mobile|auf dem handy|auf dem mobil/i;
+
+/**
+ * Pulsa el botón oficial «Ver en el móvil» de Discord para que muestre SU QR.
+ * Es solo navegación/UI: no completa ni acredita nada.
+ */
+export function openMobileQuestQR(): void {
+    const findAndClick = (): boolean => {
+        const nodes = document.querySelectorAll<HTMLElement>("button, a, [role='button']");
+        for (const node of Array.from(nodes)) {
+            const text = (node.textContent ?? "").trim();
+            if (text.length <= 40 && MOBILE_BUTTON_RE.test(text)) {
+                node.click();
+                return true;
+            }
+        }
+        return false;
+    };
+
+    if (findAndClick()) return;
+
+    // Si no estamos en Misiones, ir y reintentar unos segundos (el QR lo pinta Discord).
+    openQuestsInDiscord();
+    let tries = 0;
+    const timer = setInterval(() => {
+        if (findAndClick()) {
+            clearInterval(timer);
+            return;
+        }
+        if (++tries >= 8) {
+            clearInterval(timer);
+            showToast({ text: t("mobileQRFailed") });
+        }
+    }, 500);
+}
+
 /** Opens an external https link in the system browser (solo tras confirmar). */
 export function openExternal(url: string | undefined) {
     if (!url) return;

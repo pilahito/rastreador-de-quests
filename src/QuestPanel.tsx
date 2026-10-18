@@ -30,7 +30,7 @@ import { warmQuestVideoWindow } from "./auto/pipVideo";
 import { openAutoConsent } from "./AutoConsent";
 import { clearHistory, getHistory, HistoryEntry } from "./history";
 import { formatDate, formatDuration, StringKey, t } from "./i18n";
-import { openExternal, openQuestsInDiscord } from "./nav";
+import { openExternal, openMobileQuestQR, openQuestsInDiscord } from "./nav";
 import { isExpiringSoon, QuestInfo, QuestStatus, readQuestsFrom, SortKey, sortQuests, TaskCategory } from "./quests";
 import { settings } from "./settings";
 import { getQuestStore, subscribeStore } from "./store";
@@ -237,6 +237,11 @@ function QuestCard({ q, entry, selected, onAuto, onClaim, onCancel, onToggleSele
                     {busy && (
                         <Button size="small" variant="dangerSecondary" onClick={() => onCancel(q)}>
                             {t("autoButtonCancel")}
+                        </Button>
+                    )}
+                    {platformOnly(q) === "mobile" && (
+                        <Button size="small" variant="primary" onClick={openMobileQuestQR}>
+                            📱 {t("mobileQR")}
                         </Button>
                     )}
                     {q.status !== "expired" && q.status !== "claimed" && (

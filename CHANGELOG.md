@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.9] — 2026-10-18
+
+### Añadido
+
+- Botón **“📱 Ver QR en el móvil”** en las Quests solo-móvil del panel: pulsa el botón oficial de Discord
+  (“Ver en el móvil”) y muestra **su QR** para escanearlo con el teléfono. Es solo navegación/UI: el progreso
+  lo sigue validando la app móvil, sin emular ni falsear nada.
+- Si no encuentra el botón en la página, avisa de que abras la Quest en Misiones y lo pulses allí.
+
 ## [2.2.8] — 2026-10-18
 
 ### Añadido / Cambiado
