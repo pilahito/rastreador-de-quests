@@ -437,16 +437,22 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    min-width: 0;
 }
 
 .vc-qt-overlay-title {
     font-size: 14px;
     font-weight: 700;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .vc-qt-overlay-actions {
     display: flex;
-    gap: 6px;
+    flex-shrink: 0;
+    gap: 4px;
 }
 
 .vc-qt-overlay-btn {

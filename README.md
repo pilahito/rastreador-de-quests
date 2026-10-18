@@ -25,6 +25,14 @@
 
 ---
 
+## Capturas
+
+| Panel de Quests | Modo automático |
+| --- | --- |
+| ![Panel de Quests](docs/screenshots/panel.png) | ![Modo automático](docs/screenshots/auto.png) |
+
+> Capturas recortadas al propio plugin: no muestran DMs, servidores ni datos personales.
+
 ## Qué hace
 
 **Rastreador (siempre activo, no envía nada):**

@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.3.1] — 2026-10-18
+
+### Corregido
+
+- Cabecera del panel flotante: con el panel estrecho, el botón “Abrir panel” pasa a icono y el título se
+  recorta con puntos suspensivos, así ya no se sale del panel.
+
+### Documentación
+
+- **Capturas** del panel de Quests y del modo automático en el README (recortadas al plugin, sin datos
+  personales) y adjuntas a la release.
+
 ## [2.3.0] — 2026-10-18
 
 ### Añadido

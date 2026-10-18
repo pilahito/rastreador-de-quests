@@ -140,7 +140,8 @@ function buildHeader(quests: QuestInfo[]): HTMLElement {
         })
     );
 
-    const openBtn = mode === "mini"
+    // En modo mini o con el panel estrecho, solo el icono: si no, la cabecera no cabe.
+    const openBtn = mode === "mini" || currentWidth() < 380
         ? iconButton("▤", t("overlayOpenPanel"), () => openQuestPanel())
         : el("button", "vc-qt-overlay-btn", t("overlayOpenPanel"));
     if (openBtn instanceof HTMLButtonElement && !openBtn.title) {
