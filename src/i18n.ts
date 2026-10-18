@@ -229,7 +229,8 @@ const es = {
     selectQuest: "Marcar para el automático",
     unselectQuest: "Quitar del automático",
     selectedCount: "{n} marcadas",
-    autoSelectNone: "Modo seleccionadas: marca con ☆ las Quests que quieras automatizar."
+    autoSelectNone: "Modo seleccionadas: marca con ☆ las Quests que quieras automatizar.",
+    autoRetryScheduled: "Reintento de {name} en {min} min (intento {n}/2)."
 };
 
 const en: typeof es = {
@@ -447,7 +448,8 @@ const en: typeof es = {
     selectQuest: "Star for automation",
     unselectQuest: "Remove from automation",
     selectedCount: "{n} starred",
-    autoSelectNone: "Selected mode: star the quests you want automated with ☆."
+    autoSelectNone: "Selected mode: star the quests you want automated with ☆.",
+    autoRetryScheduled: "Retry of {name} in {min} min (attempt {n}/2)."
 };
 
 const strings = { es, en };

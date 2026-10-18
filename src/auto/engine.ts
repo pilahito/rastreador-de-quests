@@ -111,6 +111,12 @@ let ticking = false;
 let tickTimer: ReturnType<typeof setInterval> | undefined;
 let manualQueue: string[] = [];
 const sessionBlocked = new Set<string>();
+/** Reintentos de Quests que fallaron por algo probablemente temporal. */
+const retryAt = new Map<string, number>();
+const retryAttempts = new Map<string, number>();
+/** Recompensas que fallaron al reclamar (captcha): no se reintentan en bucle. */
+const claimFailed = new Set<string>();
+let lastClaimSweep = 0;
 const entries = new Map<string, AutoEntry>();
 let logLines: AutoLogLine[] = [];
 let snapshot: AutoSnapshot = { running: false, activeQuestId: null, entries: [], log: [] };
@@ -428,6 +434,28 @@ export function clearAutoLog(): void {
 /* Bucle de selección / scheduler                                      */
 /* ------------------------------------------------------------------ */
 
+/** Reclama recompensas ya completadas que quedaron pendientes (una por vuelta). */
+async function claimSweep(): Promise<void> {
+    if (!settings.store.autoClaimRewards || !hasAutoConsent()) return;
+    if (Date.now() - lastClaimSweep < 20_000) return;
+    lastClaimSweep = Date.now();
+    try {
+        const target = readRawQuests().find(quest => {
+            const id = String(quest?.id ?? "");
+            return id
+                && !claimFailed.has(id)
+                && !!quest.userStatus?.completedAt
+                && !quest.userStatus?.claimedAt
+                && !isExpired(quest);
+        });
+        if (!target) return;
+        const ok = await claimQuestNow(String(target.id));
+        if (!ok) claimFailed.add(String(target.id));
+    } catch (e) {
+        logger.debug("No se pudieron reclamar recompensas pendientes", e);
+    }
+}
+
 async function tick(): Promise<void> {
     if (ticking || !running) return;
     ticking = true;
@@ -440,6 +468,9 @@ async function tick(): Promise<void> {
             notifyAuto(t("notifAutoSuspendedTitle"), t("notifAutoSuspendedBody"));
             return;
         }
+
+        await claimSweep();
+        if (!alive(gen) || activeQuestId) return;
 
         const quests = readRawQuests();
         const candidate = pickCandidate(quests);
@@ -499,9 +530,11 @@ function pickCandidate(quests: any[]): any | null {
     if (!settings.store.autoEnabled) return null;
 
     const onlySelected = settings.store.autoScope === "selected";
+    const now = Date.now();
     const eligible = quests.filter(quest => {
         if (onlySelected && !selected.has(String(quest.id))) return false;
         if (sessionBlocked.has(String(quest.id))) return false;
+        if ((retryAt.get(String(quest.id)) ?? 0) > now) return false;
         if (isQuestDone(quest)) return false;
         if (isExpired(quest)) return false;
         if (!quest.userStatus?.enrolledAt && !settings.store.autoAccept) return false;
@@ -894,6 +927,9 @@ function waitForHeartbeat(
 
 async function finishQuest(id: string, name: string, detected: DetectedTask, target: number, gen: number, current?: number): Promise<void> {
     manualQueue = manualQueue.filter(x => x !== id);
+    retryAt.delete(id);
+    retryAttempts.delete(id);
+    claimFailed.delete(id);
     const cur = current ?? target;
 
     if (!settings.store.autoClaimRewards) {
@@ -940,8 +976,20 @@ async function finishQuest(id: string, name: string, detected: DetectedTask, tar
 }
 
 function failQuest(id: string, name: string, reason: string): void {
-    sessionBlocked.add(id);
     manualQueue = manualQueue.filter(x => x !== id);
+    const attempts = (retryAttempts.get(id) ?? 0) + 1;
+    if (settings.store.autoRetry !== false && attempts <= 2) {
+        retryAttempts.set(id, attempts);
+        const waitMs = jitter(120_000, 300_000);
+        retryAt.set(id, Date.now() + waitMs);
+        const min = Math.round(waitMs / 60_000);
+        setEntry(id, name, { phase: "failed", error: reason });
+        addLog("warn", t("autoRetryScheduled", { name, min, n: attempts }));
+        return;
+    }
+    retryAt.delete(id);
+    retryAttempts.delete(id);
+    sessionBlocked.add(id);
     setEntry(id, name, { phase: "failed", error: reason });
     addLog("error", `${name}: ${reason}`);
     notifyAuto(t("notifAutoErrorTitle"), `${name}: ${reason}`);

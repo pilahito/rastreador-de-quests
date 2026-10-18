@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.6] — 2026-10-18
+
+### Añadido
+
+- **Reintentos automáticos** (`autoRetry`, activado): si una Quest falla por algo temporal (red, latido,
+  tiempo de espera) se reintenta hasta 2 veces con 2–5 minutos de espera; los fallos permanentes no.
+- **Reclamo de recompensas pendientes**: en cada vuelta (cada 30 s) se reclama una recompensa completada que
+  se hubiera quedado sin reclamar, si `autoClaimRewards` está activo. Si falla (captcha), no entra en bucle.
+
 ## [2.2.5] — 2026-10-18
 
 ### Corregido

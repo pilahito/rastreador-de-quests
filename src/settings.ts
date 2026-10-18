@@ -158,6 +158,15 @@ export const settings = definePluginSettings({
             "antes de cada acción, deja pausas entre Quests, mantiene el juego abierto un poco más y espera antes de reclamar.",
         default: true
     },
+    autoRetry: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Retry a quest that failed for a transient reason (network, heartbeat, timeout) up to 2 times, waiting 2–5 " +
+            "minutes between attempts. Permanent failures are not retried. / Reintentar una Quest que falló por algo " +
+            "temporal (red, latido, tiempo de espera) hasta 2 veces, con 2–5 minutos entre intentos. Los fallos " +
+            "permanentes no se reintentan.",
+        default: true
+    },
     autoScope: {
         type: OptionType.SELECT,
         description:
