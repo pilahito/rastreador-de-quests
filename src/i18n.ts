@@ -79,6 +79,8 @@ const es = {
 
     firstRun: "Primera ejecución: Quests registradas sin avisar",
     notifNewTitle: "Quest nueva disponible",
+    notifMobileTitle: "Quest solo para móvil",
+    notifMobileBody: "Ábrela en la app de Discord del teléfono para completarla.",
     notifExpiringTitle: "Quest a punto de caducar",
     notifNearTitle: "¡Casi la tienes!",
     notifNearBody: "llevas un {p}% de progreso",
@@ -304,6 +306,8 @@ const en: typeof es = {
 
     firstRun: "First run: Quests recorded silently",
     notifNewTitle: "New Quest available",
+    notifMobileTitle: "Mobile-only Quest",
+    notifMobileBody: "Open it in Discord's mobile app to complete it.",
     notifExpiringTitle: "Quest about to expire",
     notifNearTitle: "Almost there!",
     notifNearBody: "you are at {p}% progress",

@@ -37,6 +37,7 @@ import {
     DetectedTask,
     detectTask,
     formatSeconds,
+    isMobileOnly,
     jitter,
     nextVideoTimestamp,
     pickExecutable,
@@ -537,6 +538,8 @@ function pickCandidate(quests: any[]): any | null {
         if ((retryAt.get(String(quest.id)) ?? 0) > now) return false;
         if (isQuestDone(quest)) return false;
         if (isExpired(quest)) return false;
+        // Nunca intentar Quests que solo valida la app móvil.
+        if (isMobileOnly(taskEntries(quest?.config?.tasks).map(([key]) => key))) return false;
         if (!quest.userStatus?.enrolledAt && !settings.store.autoAccept) return false;
         const detected = detectFor(quest);
         return !!detected && typeEnabled(detected.type);

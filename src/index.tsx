@@ -39,7 +39,7 @@ import { getQuestStore, logger, QUEST_EVENTS, subscribeStore } from "./store";
 const LEGACY_SEEN_KEY = "QuestTracker_seenQuestIds";
 const STATE_KEY = "QuestTracker_state_v2";
 
-type NotifyKind = "expiring" | "near" | "claim";
+type NotifyKind = "expiring" | "near" | "claim" | "mobile";
 
 interface TrackerState {
     seen: string[];
@@ -149,6 +149,12 @@ async function checkForChanges() {
 
             if (isNew && s.notifyNew && (q.status === "available" || q.status === "inProgress")) {
                 notify(t("notifNewTitle"), `${q.name} — ${t("reward")}: ${q.reward}`);
+            }
+
+            // Quests que solo valida la app móvil: recordatorio para hacerlas en el teléfono.
+            const mobileOnly = q.tasks.length > 0 && q.tasks.every(task => /MOBILE$/i.test(task.key));
+            if (mobileOnly && (q.status === "available" || q.status === "inProgress") && mark(q.id, "mobile")) {
+                notify(t("notifMobileTitle"), `${q.name} — ${t("notifMobileBody")}`);
             }
 
             if (s.notifyExpiring && q.status !== "claimed" && isExpiringSoon(q, s.expiryHours ?? 24) && mark(q.id, "expiring")) {

@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.7] — 2026-10-18
+
+### Añadido
+
+- **Aviso para Quests solo-móvil**: cuando aparece una Quest que solo valida la app de Discord del teléfono
+  (p. ej. Royal Match “Ver en el móvil”), el plugin manda **una notificación** recordando abrirla en el móvil.
+  No se automatiza (exigiría simular el cliente móvil).
+- El motor **descarta esas Quests de entrada** en la cola, así no pierde una vuelta intentándolas.
+
 ## [2.2.6] — 2026-10-18
 
 ### Añadido
