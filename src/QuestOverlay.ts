@@ -392,7 +392,11 @@ function render(quests: QuestInfo[]): void {
 
 function refresh(): void {
     try {
-        const quests = sortQuests(readQuestsFrom(getQuestStore()));
+        const all = sortQuests(readQuestsFrom(getQuestStore()));
+        // Por defecto solo lo que importa: en curso y recompensas por reclamar.
+        const quests = settings.store.overlayShowAll
+            ? all
+            : all.filter(q => q.status === "inProgress" || q.status === "completed");
         render(quests);
     } catch (e) {
         logger.debug("Overlay de Misiones falló", e);

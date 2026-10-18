@@ -201,6 +201,15 @@ export const settings = definePluginSettings({
             "and time left. / Muestra un panel flotante con el progreso en la página de Misiones de Discord.",
         default: true
     },
+    overlayShowAll: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Also list in the floating panel the quests you have not started and the ones already claimed. Off by default: " +
+            "it shows only in-progress quests and pending rewards, so the panel stays short. / Mostrar también en el panel " +
+            "flotante las Quests sin empezar y las ya reclamadas. Apagado por defecto: solo muestra las que están en curso " +
+            "y las recompensas pendientes, para que el panel quede compacto.",
+        default: false
+    },
     externalLinksConfirm: {
         type: OptionType.BOOLEAN,
         description:

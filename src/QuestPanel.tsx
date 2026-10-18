@@ -128,6 +128,12 @@ function platformOnly(q: QuestInfo): "mobile" | "console" | null {
     return null;
 }
 
+function canAutomate(q: QuestInfo): boolean {
+    return (q.status === "inProgress" || q.status === "available")
+        && q.category !== "other"
+        && platformOnly(q) == null;
+}
+
 function hintFor(q: QuestInfo): string | undefined {
     if (q.status === "completed") return t("claimableHint");
     const only = platformOnly(q);
@@ -159,8 +165,7 @@ function QuestCard({ q, entry, selected, onAuto, onClaim, onCancel, onToggleSele
     const hint = hintFor(q);
 
     const busy = entry != null && BUSY_PHASES.includes(entry.phase);
-    const platformRestricted = platformOnly(q) != null;
-    const canAuto = (q.status === "inProgress" || q.status === "available") && q.category !== "other" && !platformRestricted;
+    const canAuto = canAutomate(q);
     const claimable = q.status === "completed";
 
     return (
@@ -297,6 +302,17 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
         setSelectedIds(next);
     }
 
+    function markAllVisible(value: boolean) {
+        const next = new Set(selectedIds);
+        for (const q of visible) {
+            if (!canAutomate(q)) continue;
+            setQuestSelected(q.id, value);
+            if (value) next.add(q.id);
+            else next.delete(q.id);
+        }
+        setSelectedIds(next);
+    }
+
     const hours = settings.store.expiryHours ?? 24;
     const summary = useMemo(() => ({
         inProgress: quests.filter(q => q.status === "inProgress").length,
@@ -389,6 +405,8 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
                         ? `${t("selectedCount", { n: selectedIds.size })} · ${t("scopeHintSelected")}`
                         : t("scopeHintAll")}
                 </span>
+                <Button size="small" variant="secondary" onClick={() => markAllVisible(true)}>{t("selectAll")}</Button>
+                <Button size="small" variant="secondary" onClick={() => markAllVisible(false)}>{t("clearSelection")}</Button>
             </div>
 
             <div className="vc-qt-summary">

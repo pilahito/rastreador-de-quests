@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.2.8] — 2026-10-18
+
+### Añadido / Cambiado
+
+- **Panel flotante compacto**: por defecto solo muestra las Quests **en curso** y las **recompensas
+  pendientes**; las no empezadas y las reclamadas se ocultan. Ajuste `overlayShowAll` para verlas todas.
+- El panel flotante marca las Quests de móvil con etiqueta **“Móvil”** y el texto **“Hazla en el móvil”**.
+- En el panel, botones **“Marcar todas”** y **“Quitar todas”** para el selector Todas/Seleccionadas.
+
 ## [2.2.7] — 2026-10-18
 
 ### Añadido
