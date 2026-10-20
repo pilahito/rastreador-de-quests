@@ -106,6 +106,7 @@ interface RunResult {
 }
 
 let running = false;
+let consecutiveFailures = 0;
 let generation = 0;
 let activeQuestId: string | null = null;
 let ticking = false;
@@ -278,6 +279,7 @@ export function startAuto(): boolean {
     running = true;
     generation++;
     sessionBlocked.clear();
+    consecutiveFailures = 0;
     addLog("info", t("autoStarted"));
     startTimer();
     // Un humano no arranca en el mismo instante en que pulsa: pequeño margen.
@@ -943,6 +945,7 @@ function waitForHeartbeat(
 
 async function finishQuest(id: string, name: string, detected: DetectedTask, target: number, gen: number, current?: number): Promise<void> {
     manualQueue = manualQueue.filter(x => x !== id);
+    consecutiveFailures = 0;
     retryAt.delete(id);
     retryAttempts.delete(id);
     claimFailed.delete(id);
@@ -1009,6 +1012,14 @@ function failQuest(id: string, name: string, reason: string): void {
     setEntry(id, name, { phase: "failed", error: reason });
     addLog("error", `${name}: ${reason}`);
     notifyAuto(t("notifAutoErrorTitle"), `${name}: ${reason}`);
+
+    // Seguridad de la cuenta: si fallan muchas seguidas, se para solo.
+    consecutiveFailures++;
+    if (consecutiveFailures >= 5) {
+        addLog("error", t("autoTooManyFailures"));
+        notifyAuto(t("notifAutoErrorTitle"), t("autoTooManyFailures"));
+        stopAuto(t("autoTooManyFailures"));
+    }
 }
 
 function blockQuest(id: string, name: string, reason: string): void {

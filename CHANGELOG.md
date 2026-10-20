@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.3.2] — 2026-10-18
+
+### Seguridad
+
+- **Vídeo solo desde CDN de Discord**: `showQuestVideo` valida que la URL sea `https` de
+  `cdn.discordapp.com`, `media.discordapp.net`, `discord.com` o `discord.media`; cualquier otra se ignora.
+- **Solo https**: la comprobación de URLs ya no acepta `http`.
+- **Parada de seguridad**: si fallan **5 Quests seguidas**, la automatización se detiene sola y avisa.
+- Nuevo **`SECURITY.md`** con modelo de amenaza, superficies reales, qué no hace y cómo reportar problemas.
+- Cada release adjunta **`SHA256SUMS.txt`** para verificar el ZIP y las capturas.
+
 ## [2.3.1] — 2026-10-18
 
 ### Corregido

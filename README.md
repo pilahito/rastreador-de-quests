@@ -89,6 +89,16 @@
 - ❌ **No evade detección**: no inventa fingerprints, no bloquea telemetría ni oculta peticiones.
 - ❌ **No reclama nada de forma irreversible**: la recompensa la decides tú (auto-reclamar apagado por defecto).
 
+## Seguridad
+
+- Peticiones solo por **https** y a dominios de Discord; el vídeo de las Quests **solo se reproduce si la URL
+  es de un CDN de Discord** (cualquier otra se ignora).
+- Si fallan **5 Quests seguidas**, la automatización **se para sola** por seguridad.
+- Los enlaces externos solo se abren si los pulsas y confirmas; nunca se abre el navegador solo.
+- Ajustes e historial se quedan en el `DataStore` local; no hay telemetría propia ni servidores intermedios.
+- Política completa y modelo de amenaza: **[SECURITY.md](./SECURITY.md)**.
+- Cada release adjunta **`SHA256SUMS.txt`** para verificar el ZIP y las capturas antes de usarlos.
+
 ## Instalación
 
 Los plugins personalizados **no se instalan con el instalador normal de Vencord**: hay que compilar

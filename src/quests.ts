@@ -88,8 +88,9 @@ function categoryOf(key: string): TaskCategory {
 function isSafeHttpUrl(url: unknown): boolean {
     if (typeof url !== "string") return false;
     try {
+        // Solo https: nada de http, data:, javascript: ni esquemas raros.
         const u = new URL(url);
-        return u.protocol === "https:" || u.protocol === "http:";
+        return u.protocol === "https:";
     } catch {
         return false;
     }

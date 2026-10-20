@@ -161,15 +161,35 @@ export async function warmQuestVideoWindow(): Promise<boolean> {
     return ensureBox();
 }
 
+/** Solo vídeos https de los CDN de Discord: nada de URLs arbitrarias. */
+const VIDEO_HOST_RE = /(^|\.)(discordapp\.(com|net)|discord\.com|discord\.media)$/i;
+
+function safeVideoUrl(url: string | undefined): string | null {
+    if (!url) return null;
+    try {
+        const u = new URL(url);
+        if (u.protocol !== "https:") return null;
+        if (!VIDEO_HOST_RE.test(u.hostname)) return null;
+        return u.href;
+    } catch {
+        return null;
+    }
+}
+
 /** Reproduce el vídeo real de una Quest en el recuadro flotante. */
 export async function showQuestVideo(url: string | undefined, title: string): Promise<void> {
-    if (!settings.store.autoVideoPip || !url) return;
-    current = { url, title };
+    if (!settings.store.autoVideoPip) return;
+    const safe = safeVideoUrl(url);
+    if (!safe) {
+        logger.warn("Vídeo de Quest ignorado: la URL no es del CDN de Discord.");
+        return;
+    }
+    current = { url: safe, title };
     if (!ensureBox() || !video) return;
     applySound();
     try {
-        if (video.src !== url) {
-            video.src = url;
+        if (video.src !== safe) {
+            video.src = safe;
             video.load();
         }
         if (idle) idle.style.display = "none";
