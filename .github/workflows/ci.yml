@@ -51,7 +51,8 @@ jobs:
 
       - name: Comprobar tipos
         working-directory: vencord
-        run: pnpm testTsc
+        # Vencord renombró el script `testTsc` a `test:ts`; tsc directo evita depender del nombre.
+        run: pnpm exec tsc --noEmit
 
       - name: Compilar
         working-directory: vencord
