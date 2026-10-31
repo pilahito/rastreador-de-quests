@@ -128,6 +128,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubus
 Opciones avanzadas: `install.bat -VencordDir D:\ruta\Vencord`, `-NoBuild` (solo copiar),
 `-DryRun` (simula sin tocar nada), `-NoRestart` (no reiniciar Discord).
 
+**Actualizar más adelante:** doble clic en **`actualizar.bat`** (o repite la línea de PowerShell). Descarga
+la última release e instala igual. El instalador **borra solo sus temporales** al terminar (también si algo
+falla); si quieres conservarlos, usa `-KeepTemp`.
+
 > Requisitos: Windows 10/11, conexión a internet y permisos de administrador **solo** si hay que instalar
 > Git/Node. Verifica el ZIP con `SHA256SUMS.txt` de la release si quieres asegurarte.
 

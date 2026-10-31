@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.3.5] — 2026-10-31
+
+### Instalación automática
+
+- El instalador **se autolimpia**: borra la carpeta temporal de descarga al terminar, también si falla.
+  `-KeepTemp` la conserva para depurar.
+- Nuevo **`actualizar.bat`**: actualización en un clic (descarga la última release, compila, inyecta y
+  reinicia Discord).
+- `install.ps1` sirve igual para instalar y para **actualizar**: siempre coge la última release y deja todo
+  listo sin intervención.
+
 ## [2.3.4] — 2026-10-31
 
 ### Instalación en un clic
