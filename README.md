@@ -102,23 +102,34 @@
 ## Instalación
 
 Los plugins personalizados **no se instalan con el instalador normal de Vencord**: hay que compilar
-Vencord desde el código. Los scripts lo hacen casi todo.
+Vencord desde el código. El instalador de un clic lo hace todo por ti.
 
-Requisitos: **Git** y **Node.js 22+** (pnpm se activa con corepack si falta).
+### Windows — instalación en un clic
 
-### Windows (fácil)
+**Opción A: sin descargar nada (recomendada)**
 
-1. Descarga el ZIP de [Releases](https://github.com/pilahito/rastreador-de-quests/releases/latest) y descomprímelo
-   (o `git clone https://github.com/pilahito/rastreador-de-quests`).
-2. Doble clic en **`install.bat`**. El instalador:
-   - comprueba Git, Node y pnpm;
-   - busca Vencord en `..\Vencord`, `%USERPROFILE%\Vencord`, `Documentos\Vencord` o `VENCORD_DIR`
-     (si no lo encuentra, ofrece clonarlo);
-   - copia el plugin a `src\userplugins\questTracker` (incluida la carpeta `auto/`);
-   - ejecuta `pnpm install` + `pnpm build` y pregunta si quiere ejecutar `pnpm inject`.
-3. Reinicia Discord y activa **RastreadorDeQuests** en **Ajustes → Vencord → Plugins**.
+Abre PowerShell y pega esta línea (descarga la última release, la instala y reinicia Discord):
 
-Opciones: `install.bat -VencordDir D:\ruta\Vencord`, `-NoBuild` (solo copiar), `-Inject -Yes` (sin preguntas).
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/pilahito/rastreador-de-quests/main/install.ps1 | iex"
+```
+
+**Opción B: con el ZIP**
+
+1. Descarga el ZIP de [Releases](https://github.com/pilahito/rastreador-de-quests/releases/latest) y descomprímelo.
+2. Doble clic en **`install.bat`** y espera (1-3 min). Hace todo:
+   - instala **Git** y **Node.js 22+** con `winget` si faltan (puede pedir UAC);
+   - busca Vencord (`%USERPROFILE%\Vencord`, `Documentos\Vencord`, `VENCORD_DIR`…) y **lo clona** si no existe;
+   - copia el plugin a `src\userplugins\questTracker` (con la carpeta `auto/`);
+   - prepara el pnpm que fija Vencord, ejecuta `pnpm install` + `pnpm build`;
+   - **inyecta Vencord en Discord** sin preguntas y **reinicia Discord**.
+3. Activa **RastreadorDeQuests** en **Ajustes → Vencord → Plugins** (si ya lo tenías activado, sigue así).
+
+Opciones avanzadas: `install.bat -VencordDir D:\ruta\Vencord`, `-NoBuild` (solo copiar),
+`-DryRun` (simula sin tocar nada), `-NoRestart` (no reiniciar Discord).
+
+> Requisitos: Windows 10/11, conexión a internet y permisos de administrador **solo** si hay que instalar
+> Git/Node. Verifica el ZIP con `SHA256SUMS.txt` de la release si quieres asegurarte.
 
 ### macOS / Linux
 
@@ -133,7 +144,7 @@ Copia el contenido de `src/` en `Vencord/src/userplugins/questTracker/` y ejecut
 ```bash
 pnpm install --frozen-lockfile
 pnpm build
-pnpm inject     # opcional
+node scripts/runInstaller.mjs -- -install -branch auto   # inyectar (opcional)
 ```
 
 ### El nombre del repositorio

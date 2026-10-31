@@ -3,6 +3,20 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.3.4] — 2026-10-31
+
+### Instalación en un clic
+
+- **`install.bat` ahora es un instalador de un clic**: comprueba/instala Git y Node (winget), encuentra o
+  clona Vencord, prepara el pnpm que fija Vencord, compila, **inyecta Vencord sin preguntas** y **reinicia
+  Discord**. Opciones: `-VencordDir`, `-NoBuild`, `-DryRun`, `-NoRestart`.
+- Nuevo **`install.ps1`**: instalación sin descargar el ZIP con una sola línea de PowerShell:
+  `irm https://raw.githubusercontent.com/pilahito/rastreador-de-quests/main/install.ps1 | iex`
+  (descarga la última release, la instala y reinicia Discord).
+- La inyección usa el CLI oficial (`node scripts/runInstaller.mjs -- -install -branch auto`), sin menús.
+- Mensajes del instalador en UTF-8 y detección de stderr de pnpm (PowerShell 5.1 ya no aborta a mitad).
+- Probado de principio a fin en Windows: compila, inyecta y reinicia Discord.
+
 ## [2.3.3] — 2026-10-31
 
 ### Mejoras para Quests de móvil
