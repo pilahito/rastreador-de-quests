@@ -22,6 +22,13 @@ import {
     selectQuestTaskConfig,
     selectTaskFamily
 } from "../src/auto/pure.ts";
+import {
+    isConsoleOnlyQuest,
+    isDesktopCapableQuest,
+    isMobileOnlyQuest,
+    platformOfKeys,
+    platformOfQuest
+} from "../src/platform.ts";
 
 const taskConfig = (tasks) => ({ tasks });
 
@@ -144,5 +151,35 @@ test("isConsoleOnly", () => {
     assert.equal(isConsoleOnly(["PLAY_ON_XBOX", "PLAY_ON_DESKTOP"]), false);
     assert.equal(isConsoleOnly([]), false);
 });
+
+test("platformOfKeys clasifica móvil, consola y escritorio", () => {
+    assert.equal(platformOfKeys(["WATCH_VIDEO_ON_MOBILE"]), "mobile");
+    assert.equal(platformOfKeys(["PLAY_ON_XBOX", "PLAY_ON_PLAYSTATION"]), "console");
+    assert.equal(platformOfKeys(["PLAY_ON_DESKTOP"]), "desktop");
+    assert.equal(platformOfKeys(["WATCH_VIDEO"]), "desktop");
+    assert.equal(platformOfKeys([]), "other");
+});
+
+test("platformOfKeys marca mixta cuando hay tarea de escritorio y móvil/consola", () => {
+    assert.equal(platformOfKeys(["PLAY_ON_DESKTOP", "WATCH_VIDEO_ON_MOBILE"]), "mixed");
+    assert.equal(platformOfKeys(["PLAY_ON_XBOX", "PLAY_ON_DESKTOP"]), "mixed");
+});
+
+test("helpers de plataforma sobre Quest con tasks", () => {
+    const mobileQuest = { tasks: [{ key: "WATCH_VIDEO_ON_MOBILE" }] };
+    const consoleQuest = { tasks: [{ key: "PLAY_ON_XBOX" }] };
+    const desktopQuest = { tasks: [{ key: "PLAY_ON_DESKTOP" }] };
+    const mixedQuest = { tasks: [{ key: "PLAY_ON_DESKTOP" }, { key: "WATCH_VIDEO_ON_MOBILE" }] };
+
+    assert.equal(isMobileOnlyQuest(mobileQuest), true);
+    assert.equal(isMobileOnlyQuest(mixedQuest), false);
+    assert.equal(isConsoleOnlyQuest(consoleQuest), true);
+    assert.equal(isConsoleOnlyQuest(mobileQuest), false);
+    assert.equal(isDesktopCapableQuest(desktopQuest), true);
+    assert.equal(isDesktopCapableQuest(mixedQuest), true);
+    assert.equal(isDesktopCapableQuest(mobileQuest), false);
+    assert.equal(platformOfQuest(undefined), "other");
+});
+
 
 

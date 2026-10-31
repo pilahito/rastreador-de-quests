@@ -38,7 +38,20 @@ export function openQuestsInDiscord(route = "/quest-home") {
     showToast({ text: "Discord → Quests" });
 }
 
-const MOBILE_BUTTON_RE = /ver en el m[oó]vil|view on mobile|voir sur mobile|auf dem handy|auf dem mobil/i;
+const MOBILE_BUTTON_RE = new RegExp([
+    "ver en el m[oó]vil", // es
+    "view on mobile", // en
+    "voir sur mobile", // fr
+    "auf dem handy", "auf dem mobil", // de
+    "apri sul telefono", // it
+    "abrir no celular", "ver no celular", // pt
+    "op de mobiel", // nl
+    "na telefonie", "w telefonie", // pl
+    "telefonda aç", // tr
+    "на телефоне", // ru
+    "na mobilu", // cs/sk
+    "mobilen" // da/no/sv fallback
+].join("|"), "i");
 
 /**
  * Pulsa el botón oficial «Ver en el móvil» de Discord para que muestre SU QR.
@@ -50,6 +63,10 @@ export function openMobileQuestQR(): void {
         for (const node of Array.from(nodes)) {
             const text = (node.textContent ?? "").trim();
             if (text.length <= 40 && MOBILE_BUTTON_RE.test(text)) {
+                // Puede estar fuera del viewport: acercarlo antes de pulsar.
+                try {
+                    node.scrollIntoView({ block: "center" });
+                } catch { /* ignore */ }
                 node.click();
                 return true;
             }

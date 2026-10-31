@@ -3,6 +3,19 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.3.3] — 2026-10-31
+
+### Mejoras para Quests de móvil
+
+- Nuevo módulo **`src/platform.ts`**: clasificación única de cada Quest (escritorio / móvil / consola /
+  mixta). Lo usan el panel, el panel flotante y el motor, así no hay reglas duplicadas ni riesgo de tratar
+  una Quest de móvil como de escritorio.
+- **Panel: filtro “Plataforma”** con chips *Todas · 📱 Móvil · 🎮 Consola*, para encontrar de un vistazo las
+  Quests que hay que hacer en el teléfono o la consola.
+- **QR de móvil más robusto**: reconoce el botón “Ver en el móvil” en más idiomas y lo desplaza a la vista
+  antes de pulsarlo.
+- **+3 pruebas** para la clasificación de plataforma (18 en total).
+
 ## [2.3.2] — 2026-10-18
 
 ### Seguridad

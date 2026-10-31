@@ -26,6 +26,7 @@ import * as DataStore from "@api/DataStore";
 
 import { getAutoSnapshot, setAutoEnabled } from "./auto/engine";
 import { formatDuration, StringKey, t } from "./i18n";
+import { isMobileOnlyQuest } from "./platform";
 import { openQuestPanel } from "./QuestPanel";
 import { isExpiringSoon, QuestInfo, QuestStatus, readQuestsFrom } from "./quests";
 import { settings } from "./settings";
@@ -177,7 +178,7 @@ function buildHeader(quests: QuestInfo[]): HTMLElement {
 
 function buildRow(quest: QuestInfo): HTMLElement {
     const pct = Math.round(quest.progress * 100);
-    const mobileOnly = quest.tasks.length > 0 && quest.tasks.every(task => /MOBILE$/i.test(task.key));
+    const mobileOnly = isMobileOnlyQuest(quest);
     const row = el("div", "vc-qt-overlay-row vc-qt-overlay-row-" + quest.status);
     row.title = `${quest.name} · ${quest.reward} · ${pct}%`;
     row.addEventListener("click", () => openQuestPanel());

@@ -25,6 +25,9 @@ const es = {
     search: "Buscar por nombre, juego o recompensa…",
     filterStatus: "Estado",
     filterType: "Tipo",
+    filterPlatform: "Plataforma",
+    platformMobile: "Móvil",
+    platformConsole: "Consola",
     sortBy: "Ordenar",
     all: "Todas",
 
@@ -259,6 +262,9 @@ const en: typeof es = {
     search: "Search by name, game or reward…",
     filterStatus: "Status",
     filterType: "Type",
+    filterPlatform: "Platform",
+    platformMobile: "Mobile",
+    platformConsole: "Console",
     sortBy: "Sort",
     all: "All",
 

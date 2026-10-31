@@ -31,6 +31,7 @@ import { openAutoConsent } from "./AutoConsent";
 import { clearHistory, getHistory, HistoryEntry } from "./history";
 import { formatDate, formatDuration, StringKey, t } from "./i18n";
 import { openExternal, openMobileQuestQR, openQuestsInDiscord } from "./nav";
+import { platformOfQuest, QuestPlatform } from "./platform";
 import { isExpiringSoon, QuestInfo, QuestStatus, readQuestsFrom, SortKey, sortQuests, TaskCategory } from "./quests";
 import { settings } from "./settings";
 import { getQuestStore, subscribeStore } from "./store";
@@ -120,25 +121,19 @@ function minutes(sec: number) {
     return Math.floor(sec / 60);
 }
 
-function platformOnly(q: QuestInfo): "mobile" | "console" | null {
-    const keys = q.tasks.map(task => task.key);
-    if (!keys.length) return null;
-    if (keys.every(key => /MOBILE$/i.test(key))) return "mobile";
-    if (keys.every(key => /XBOX|PLAYSTATION/i.test(key))) return "console";
-    return null;
-}
-
 function canAutomate(q: QuestInfo): boolean {
+    const platform = platformOfQuest(q);
     return (q.status === "inProgress" || q.status === "available")
         && q.category !== "other"
-        && platformOnly(q) == null;
+        && platform !== "mobile"
+        && platform !== "console";
 }
 
 function hintFor(q: QuestInfo): string | undefined {
     if (q.status === "completed") return t("claimableHint");
-    const only = platformOnly(q);
-    if (only === "mobile") return t("mobileOnly");
-    if (only === "console") return t("consoleOnly");
+    const platform = platformOfQuest(q);
+    if (platform === "mobile") return t("mobileOnly");
+    if (platform === "console") return t("consoleOnly");
     if (q.status === "available") return t("acceptHint");
     if (q.status !== "inProgress") return undefined;
     switch (q.category) {
@@ -239,7 +234,7 @@ function QuestCard({ q, entry, selected, onAuto, onClaim, onCancel, onToggleSele
                             {t("autoButtonCancel")}
                         </Button>
                     )}
-                    {platformOnly(q) === "mobile" && (
+                    {platformOfQuest(q) === "mobile" && (
                         <Button size="small" variant="primary" onClick={openMobileQuestQR}>
                             📱 {t("mobileQR")}
                         </Button>
@@ -290,6 +285,7 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
     const [status, setStatus] = useState<QuestStatus | "all">("all");
     const [type, setType] = useState<TaskCategory | "all">("all");
     const [sort, setSort] = useState<SortKey>("expiry");
+    const [platformFilter, setPlatformFilter] = useState<QuestPlatform | "all">("all");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(getSelectedQuestIds()));
     const [scope, setScope] = useState<string>(settings.store.autoScope ?? "all");
 
@@ -333,9 +329,10 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
         return sortQuests(quests.filter(q =>
             (status === "all" || q.status === status) &&
             (type === "all" || q.category === type) &&
+            (platformFilter === "all" || platformOfQuest(q) === platformFilter) &&
             (!needle || `${q.name} ${q.game} ${q.publisher ?? ""} ${q.reward}`.toLowerCase().includes(needle))
         ), sort);
-    }, [quests, query, status, type, sort]);
+    }, [quests, query, status, type, platformFilter, sort]);
 
     function enableAutomation() {
         // Gesto de usuario: deja lista la ventana flotante del vídeo.
@@ -437,6 +434,12 @@ function QuestsTab({ snapshot }: { snapshot: AutoSnapshot; }) {
                 {(Object.keys(TYPE_KEYS) as TaskCategory[]).filter(c => presentTypes.includes(c)).map(c => (
                     <Chip key={c} active={type === c} onClick={() => setType(c)}>{TYPE_ICONS[c]} {t(TYPE_KEYS[c])}</Chip>
                 ))}
+            </div>
+            <div className="vc-qt-filters">
+                <span className="vc-qt-label">{t("filterPlatform")}</span>
+                <Chip active={platformFilter === "all"} onClick={() => setPlatformFilter("all")}>{t("all")}</Chip>
+                <Chip active={platformFilter === "mobile"} onClick={() => setPlatformFilter("mobile")}>📱 {t("platformMobile")}</Chip>
+                <Chip active={platformFilter === "console"} onClick={() => setPlatformFilter("console")}>🎮 {t("platformConsole")}</Chip>
             </div>
             <div className="vc-qt-filters">
                 <span className="vc-qt-label">{t("sortBy")}</span>

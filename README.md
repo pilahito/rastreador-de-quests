@@ -311,6 +311,7 @@ rastreador-de-quests/
 │   │   ├── pure.ts        # lógica pura y testeable
 │   │   └── bridge.ts      # puente Ajustes ↔ motor
 │   ├── quests.ts          # lectura tolerante de Quests
+│   ├── platform.ts        # clasificación escritorio / móvil / consola / mixta
 │   ├── store.ts           # detección del store y eventos
 │   ├── history.ts         # historial local
 │   ├── nav.ts             # accesos que solo navegan
