@@ -91,12 +91,21 @@ function useLiveQuests() {
     const [, setTick] = useState(0);
 
     useEffect(() => {
-        const update = () => setState(readCurrentQuests());
+        // Varios eventos del store seguidos no deben provocar varios renders: se agrupan.
+        let pending: ReturnType<typeof setTimeout> | undefined;
+        const update = () => {
+            if (pending) return;
+            pending = setTimeout(() => {
+                pending = undefined;
+                setState(readCurrentQuests());
+            }, 250);
+        };
         const unsub = subscribeStore(update);
         const timer = setInterval(() => setTick(n => n + 1), 30_000);
         return () => {
             unsub();
             clearInterval(timer);
+            if (pending) clearTimeout(pending);
         };
     }, []);
 

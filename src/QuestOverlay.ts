@@ -249,14 +249,34 @@ function setPos(left: number, top: number): void {
     applyPos();
 }
 
-function setWidth(width: number): void {
+/** Agrupa eventos de ratón por frame: mover/redimensionar sin forzar layout en cada píxel. */
+function rafThrottle(fn: (...args: any[]) => void): (...args: any[]) => void {
+    let frame = 0;
+    let lastArgs: any[] | null = null;
+    return (...args: any[]) => {
+        lastArgs = args;
+        if (frame) return;
+        frame = window.requestAnimationFrame(() => {
+            frame = 0;
+            const pending = lastArgs;
+            lastArgs = null;
+            if (pending) fn(...pending);
+        });
+    };
+}
+
+function setWidth(width: number, live = false): void {
     if (!container) return;
     customWidth = clamp(Math.round(width), MIN_WIDTH, Math.max(MIN_WIDTH, window.innerWidth - 40));
     container.style.width = `${customWidth}px`;
     applyPos();
-    // El ancho cambia el diseño interno (modo estrecho): re-renderizar.
-    lastSignature = "";
-    refresh();
+    // Durante el arrastre basta con cambiar el ancho; se repinta una vez al soltar.
+    const root = container.querySelector(".vc-qt-overlay");
+    root?.classList.toggle("vc-qt-overlay-narrow", customWidth < 320);
+    if (!live) {
+        lastSignature = "";
+        refresh();
+    }
 }
 
 function loadPos(): void {
@@ -291,7 +311,7 @@ function makeResizeGrip(): HTMLElement {
         const startX = event.clientX;
         const startWidth = container.offsetWidth || currentWidth();
         container.classList.add("vc-qt-resizing");
-        const move = (e: MouseEvent) => setWidth(startWidth + (e.clientX - startX));
+        const move = rafThrottle((e: MouseEvent) => setWidth(startWidth + (e.clientX - startX), true));
         const up = () => {
             window.removeEventListener("mousemove", move);
             window.removeEventListener("mouseup", up);
@@ -300,6 +320,9 @@ function makeResizeGrip(): HTMLElement {
                 void DataStore.set(WIDTH_KEY, customWidth)
                     .catch(e => logger.debug("No se pudo guardar el ancho del panel", e));
             }
+            // Un solo repintado al soltar.
+            lastSignature = "";
+            refresh();
         };
         window.addEventListener("mousemove", move);
         window.addEventListener("mouseup", up);
@@ -319,13 +342,13 @@ function attachDrag(host: HTMLElement): void {
         host.classList.add("vc-qt-dragging");
         event.preventDefault();
 
-        const move = (e: MouseEvent) => {
+        const move = rafThrottle((e: MouseEvent) => {
             const width = host.offsetWidth || rect.width;
             setPos(
                 clamp(e.clientX - offsetX, 0, window.innerWidth - width - 8),
                 clamp(e.clientY - offsetY, 0, window.innerHeight - 60)
             );
-        };
+        });
         const up = () => {
             window.removeEventListener("mousemove", move);
             window.removeEventListener("mouseup", up);

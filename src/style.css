@@ -917,3 +917,19 @@
     color: #faa61a;
     border-color: rgba(250, 166, 26, 0.4);
 }
+
+/* Fluidez: no pintar lo que está fuera de pantalla y aislar el panel flotante */
+
+.vc-qt-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 150px;
+}
+
+.vc-qt-overlay-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 64px;
+}
+
+.vc-qt-overlay {
+    contain: layout paint;
+}

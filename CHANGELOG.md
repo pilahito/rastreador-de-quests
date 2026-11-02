@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.3.6] — 2026-11-02
+
+### Fluidez
+
+- **Arrastrar y redimensionar** el panel flotante va por frames (`requestAnimationFrame`): ya no repinta en
+  cada píxel del ratón; al soltar guarda la posición/tamaño y repinta una sola vez.
+- Las listas largas usan **`content-visibility: auto`** (tarjetas del panel y filas del panel flotante):
+  Discord solo pinta lo que está en pantalla.
+- El panel **agrupa los eventos del store** (250 ms) para no re-renderizar varias veces seguidas.
+- El panel flotante se aísla con **`contain: layout paint`** para que sus cambios no recompongan la página.
+- Probado el arrastre y el redimensionado tras el cambio (mueve y cambia el ancho correctamente).
+
 ## [2.3.5] — 2026-10-31
 
 ### Instalación automática
