@@ -171,6 +171,7 @@ ZIP y los badges históricos no se rompen. La carpeta que se copia a Vencord sig
 | Mover / ensanchar el panel | Arrastra la **cabecera** para moverlo; arrastra la **esquina inferior derecha** para ensancharlo (doble clic en la cabecera lo devuelve a su sitio) |
 | Minimizar / maximizar / detener | Botones **—**, **⛶** y **⏹/▶** de la cabecera del panel flotante |
 | Silenciar o sacar el vídeo | Botón **🔇/🔊** en el recuadro del vídeo; **⧉** lo saca a ventana flotante (o haz clic fuera del recuadro) |
+| Quest solo-móvil | Botón **📱 Ver QR en el móvil** (usa el QR oficial de Discord) y **▶ Ver anuncio aquí** para ver el vídeo en el PC; el progreso sigue contando en el teléfono |
 | Ver qué está haciendo | Pestaña **⚙️ Automático**: tarea actual, cola y registro con hora |
 
 ## Ajustes

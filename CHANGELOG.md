@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.4.1] — 2026-11-17
+
+### Añadido
+
+- Botón **“▶ Ver anuncio aquí”** en las Quests solo-móvil: reproduce el vídeo en el recuadro flotante del PC
+  (solo visualización; el progreso sigue contando desde el teléfono). Si el vídeo flotante está desactivado,
+  avisa y no abre nada.
+
 ## [2.4.0] — 2026-11-17
 
 ### Más opciones en Ajustes

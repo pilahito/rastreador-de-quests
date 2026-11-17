@@ -26,7 +26,7 @@ import {
     setQuestSelected,
     subscribeAuto
 } from "./auto/engine";
-import { warmQuestVideoWindow } from "./auto/pipVideo";
+import { showQuestVideo, warmQuestVideoWindow } from "./auto/pipVideo";
 import { openAutoConsent } from "./AutoConsent";
 import { clearHistory, getHistory, HistoryEntry } from "./history";
 import { formatDate, formatDuration, StringKey, t } from "./i18n";
@@ -246,6 +246,22 @@ function QuestCard({ q, entry, selected, onAuto, onClaim, onCancel, onToggleSele
                     {platformOfQuest(q) === "mobile" && (
                         <Button size="small" variant="primary" onClick={openMobileQuestQR}>
                             📱 {t("mobileQR")}
+                        </Button>
+                    )}
+                    {platformOfQuest(q) === "mobile" && q.videoUrl && (
+                        <Button
+                            size="small"
+                            variant="secondary"
+                            title={t("mobileAdHint")}
+                            onClick={() => {
+                                if (!settings.store.autoVideoPip) {
+                                    showToast({ text: t("mobileAdOff"), variant: "danger" } as any);
+                                    return;
+                                }
+                                void showQuestVideo(q.videoUrl, q.name);
+                            }}
+                        >
+                            ▶ {t("mobileAd")}
                         </Button>
                     )}
                     {q.status !== "expired" && q.status !== "claimed" && (
