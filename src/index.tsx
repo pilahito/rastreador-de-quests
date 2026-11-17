@@ -30,6 +30,7 @@ import { hideQuestVideo, showQuestVideo, warmQuestVideoWindow } from "./auto/pip
 import { openAutoConsent } from "./AutoConsent";
 import { recordHistory } from "./history";
 import { setLang, t } from "./i18n";
+import { isMobileOnlyQuest } from "./platform";
 import { startQuestPageOverlay, stopQuestPageOverlay } from "./QuestOverlay";
 import { openQuestPanel, readCurrentQuests } from "./QuestPanel";
 import { isExpiringSoon, QuestInfo } from "./quests";
@@ -152,8 +153,8 @@ async function checkForChanges() {
             }
 
             // Quests que solo valida la app móvil: recordatorio para hacerlas en el teléfono.
-            const mobileOnly = q.tasks.length > 0 && q.tasks.every(task => /MOBILE$/i.test(task.key));
-            if (mobileOnly && (q.status === "available" || q.status === "inProgress") && mark(q.id, "mobile")) {
+            if (s.notifyMobile !== false && isMobileOnlyQuest(q)
+                && (q.status === "available" || q.status === "inProgress") && mark(q.id, "mobile")) {
                 notify(t("notifMobileTitle"), `${q.name} — ${t("notifMobileBody")}`);
             }
 

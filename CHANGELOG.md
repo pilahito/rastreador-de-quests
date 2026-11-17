@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/).
 
+## [2.4.0] — 2026-11-17
+
+### Más opciones en Ajustes
+
+- **`notifyMobile`**: activar o desactivar los avisos de Quests que solo se hacen en el móvil.
+- **`autoSessionLimit`**: freno de seguridad; para la automatización tras X minutos (0 = sin límite).
+- **`autoStopAfterQuests`**: para tras completar X Quests en la sesión (0 = sin límite). Se resetea al volver
+  a activar.
+- **`videoVolume`**: volumen del vídeo flotante cuando el sonido está activado.
+- **`overlayOpacity`**: opacidad del panel flotante (50–100 %).
+- **`overlayHideWhenEmpty`**: oculta el panel flotante cuando no hay nada en curso ni recompensas pendientes.
+
 ## [2.3.6] — 2026-11-02
 
 ### Fluidez

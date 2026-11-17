@@ -382,6 +382,12 @@ function attachDrag(host: HTMLElement): void {
 function render(quests: QuestInfo[]): void {
     if (!container) return;
 
+    // Opacidad y ocultar-cuando-vacío se aplican siempre, aunque el resto no cambie.
+    const opacity = Number(settings.store.overlayOpacity);
+    container.style.opacity = Number.isFinite(opacity) ? String(clamp(opacity, 50, 100) / 100) : "0.95";
+    const hideWhenEmpty = settings.store.overlayHideWhenEmpty !== false && quests.length === 0;
+    container.style.display = hideWhenEmpty ? "none" : "";
+
     const width = currentWidth();
     // Hash barato en vez de JSON.stringify de todas las Quests.
     let hash = 2166136261;

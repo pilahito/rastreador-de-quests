@@ -39,8 +39,20 @@ function soundEnabled(): boolean {
     }
 }
 
+function volumeValue(): number {
+    try {
+        const value = Number(settings.store.videoVolume);
+        return Number.isFinite(value) ? Math.min(1, Math.max(0, value / 100)) : 0.6;
+    } catch {
+        return 0.6;
+    }
+}
+
 function applySound(): void {
-    if (video) video.muted = !soundEnabled();
+    if (video) {
+        video.muted = !soundEnabled();
+        video.volume = volumeValue();
+    }
     paintMuteButton?.();
 }
 

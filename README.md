@@ -185,6 +185,7 @@ ZIP y los badges históricos no se rompen. La carpeta que se copia a Vencord sig
 | `notifyExpiring` / `expiryHours` | Avisar antes de caducar / horas de antelación | `true` / `24` |
 | `notifyNearComplete` / `nearCompletePercent` | Avisar con progreso casi completo / % | `true` / `80` |
 | `notifyClaimable` | Avisar cuando puedes reclamar (lo reclamas tú) | `true` |
+| `notifyMobile` | Avisar de Quests que solo se hacen en el móvil | `true` |
 | `questRoute` | Ruta que abre "Abrir en Discord" | `/quest-home` |
 | `logToConsole` | Volcar la lista en la consola (depuración) | `false` |
 
@@ -203,10 +204,17 @@ ZIP y los badges históricos no se rompen. La carpeta que se copia a Vencord sig
 | `autoHideActivity` | Ocultar "Jugando X" mientras dura el spoof y restaurarlo después | `true` |
 | `autoLogToConsole` | Escribir el registro automático también en la consola | `false` |
 | `autoHumanPacing` | Ritmo humano: pausas antes/entre acciones y esperas al reclamar | `true` |
+| `autoFastPacing` | Ritmo rápido: acorta las pausas al ~40 % | `false` |
+| `autoSessionLimit` | Parar la automatización tras X minutos (0 = sin límite) | `0` |
+| `autoStopAfterQuests` | Parar tras completar X Quests en la sesión (0 = sin límite) | `0` |
 | `autoScope` | Qué automatiza: todas las permitidas o solo las marcadas con ☆ | `all` |
 | `autoVideoPip` | Vídeo real de la Quest en recuadro flotante mientras se completa | `true` |
 | `autoVideoSound` | Empezar el vídeo con sonido (también se cambia con 🔇/🔊) | `false` |
+| `videoVolume` | Volumen del vídeo flotante cuando el sonido está activado | `60` |
 | `showQuestPageOverlay` | Panel flotante con progreso en la página de Misiones | `true` |
+| `overlayOpacity` | Opacidad del panel flotante (%) | `95` |
+| `overlayHideWhenEmpty` | Ocultar el panel flotante cuando no hay nada en curso ni pendiente | `true` |
+| `overlayShowAll` | Mostrar también en el panel flotante las no empezadas y las reclamadas | `false` |
 
 ## Cómo funciona
 

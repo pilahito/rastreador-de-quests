@@ -107,6 +107,9 @@ interface RunResult {
 
 let running = false;
 let consecutiveFailures = 0;
+/** Límites de sesión (minutos y Quests completadas). */
+let sessionStartedAt = 0;
+let sessionCompleted = 0;
 let generation = 0;
 let activeQuestId: string | null = null;
 let ticking = false;
@@ -280,6 +283,8 @@ export function startAuto(): boolean {
     generation++;
     sessionBlocked.clear();
     consecutiveFailures = 0;
+    sessionStartedAt = Date.now();
+    sessionCompleted = 0;
     addLog("info", t("autoStarted"));
     startTimer();
     // Un humano no arranca en el mismo instante en que pulsa: pequeño margen.
@@ -482,6 +487,20 @@ async function tick(): Promise<void> {
         if (isSuspended()) {
             stopAuto(t("autoSuspended"));
             notifyAuto(t("notifAutoSuspendedTitle"), t("notifAutoSuspendedBody"));
+            return;
+        }
+
+        // Frenos de seguridad configurables: límite de minutos y de Quests completadas.
+        const limitMinutes = Number(settings.store.autoSessionLimit) || 0;
+        if (limitMinutes > 0 && Date.now() - sessionStartedAt >= limitMinutes * 60_000) {
+            stopAuto(t("autoSessionLimitReached"));
+            notifyAuto(t("notifLimitTitle"), t("autoSessionLimitReached"));
+            return;
+        }
+        const limitQuests = Number(settings.store.autoStopAfterQuests) || 0;
+        if (limitQuests > 0 && sessionCompleted >= limitQuests) {
+            stopAuto(t("autoQuestsLimitReached"));
+            notifyAuto(t("notifLimitTitle"), t("autoQuestsLimitReached"));
             return;
         }
 
@@ -946,6 +965,7 @@ function waitForHeartbeat(
 async function finishQuest(id: string, name: string, detected: DetectedTask, target: number, gen: number, current?: number): Promise<void> {
     manualQueue = manualQueue.filter(x => x !== id);
     consecutiveFailures = 0;
+    sessionCompleted++;
     retryAt.delete(id);
     retryAttempts.delete(id);
     claimFailed.delete(id);

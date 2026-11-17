@@ -56,6 +56,13 @@ export const settings = definePluginSettings({
         description: "Notify when a reward is ready to claim (you claim it yourself) / Avisar cuando puedes reclamar (lo reclamas tú)",
         default: true
     },
+    notifyMobile: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Notify about mobile-only quests with a reminder to open them on your phone / Avisar de Quests que solo se " +
+            "pueden hacer en el móvil, recordando abrirlas en el teléfono",
+        default: true
+    },
     questRoute: {
         type: OptionType.STRING,
         description: "Discord route for 'Open in Discord' / Ruta de Discord para 'Abrir en Discord'",
@@ -186,6 +193,24 @@ export const settings = definePluginSettings({
             { label: "Solo las marcadas con ☆ / Only starred", value: "selected" }
         ]
     },
+    autoSessionLimit: {
+        type: OptionType.SLIDER,
+        description:
+            "Stop the automation automatically after this many minutes (0 = no limit). Safety brake for long sessions. / " +
+            "Parar la automatización sola tras estos minutos (0 = sin límite). Freno de seguridad para sesiones largas.",
+        markers: [0, 30, 60, 120, 240],
+        default: 0,
+        stickToMarkers: true
+    },
+    autoStopAfterQuests: {
+        type: OptionType.SLIDER,
+        description:
+            "Stop the automation after completing this many quests in the session (0 = no limit). / " +
+            "Parar la automatización tras completar estas Quests en la sesión (0 = sin límite).",
+        markers: [0, 5, 10, 20, 50],
+        default: 0,
+        stickToMarkers: true
+    },
     autoVideoPip: {
         type: OptionType.BOOLEAN,
         description:
@@ -203,6 +228,13 @@ export const settings = definePluginSettings({
             "cambiarlo con el botón 🔇/🔊 del vídeo flotante.",
         default: false
     },
+    videoVolume: {
+        type: OptionType.SLIDER,
+        description: "Volume of the floating quest video when sound is on / Volumen del vídeo flotante cuando el sonido está activado",
+        markers: [0, 25, 50, 75, 100],
+        default: 60,
+        stickToMarkers: true
+    },
     showQuestPageOverlay: {
         type: OptionType.BOOLEAN,
         description:
@@ -218,6 +250,20 @@ export const settings = definePluginSettings({
             "flotante las Quests sin empezar y las ya reclamadas. Apagado por defecto: solo muestra las que están en curso " +
             "y las recompensas pendientes, para que el panel quede compacto.",
         default: false
+    },
+    overlayOpacity: {
+        type: OptionType.SLIDER,
+        description: "Opacity of the floating panel (%) / Opacidad del panel flotante (%)",
+        markers: [50, 70, 80, 90, 95, 100],
+        default: 95,
+        stickToMarkers: true
+    },
+    overlayHideWhenEmpty: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Hide the floating panel when there is nothing in progress or pending / Ocultar el panel flotante cuando no " +
+            "hay nada en curso ni recompensas pendientes",
+        default: true
     },
     externalLinksConfirm: {
         type: OptionType.BOOLEAN,
